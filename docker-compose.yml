@@ -1,0 +1,42 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: sku-profitability-db
+    environment:
+      POSTGRES_DB: sku_profitability_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sku-profitability-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/sku_profitability_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: mysecretpassword
+      JWT_SECRET: QzXgN8yJpY4rL2sF5vW0hT1bA7eC9uD3kH6mZpXqYwS0jL9kVyN8tR7eF6dG5hA9bC8dE7fG6hI5jK4lM3nO2pQ1rS0tU9vW8xY7zZ6yA5bX4cW3vU2tS1rQ0pOnM9lK8jI7hG6fE5dC4bA3zY2xW1vU0tS9rQ8pOn
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+

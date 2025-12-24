@@ -1,4 +1,4 @@
-package com.project1.SKUProfitability;
+package com.project2.SKUProfitability;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

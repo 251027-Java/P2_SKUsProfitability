@@ -7,15 +7,20 @@ services:
       POSTGRES_DB: sku_profitability_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sku_profitability_db"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - sku-network
 
   # Spring Boot Backend
   backend:
@@ -28,15 +33,27 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: mysecretpassword
       JWT_SECRET: QzXgN8yJpY4rL2sF5vW0hT1bA7eC9uD3kH6mZpXqYwS0jL9kVyN8tR7eF6dG5hA9bC8dE7fG6hI5jK4lM3nO2pQ1rS0tU9vW8xY7zZ6yA5bX4cW3vU2tS1rQ0pOnM9lK8jI7hG6fE5dC4bA3zY2xW1vU0tS9rQ8pOn
+      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./backend/src:/app/src
     restart: unless-stopped
+    networks:
+      - sku-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 volumes:
   postgres_data:
+    driver: local
+
+networks:
+  sku-network:
+    driver: bridge
 

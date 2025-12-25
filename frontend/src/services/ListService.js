@@ -119,3 +119,21 @@ export const removeSKUFromList = async (listId, skuId) => {
     }
 };
 
+export const getListById = async (listId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/${listId}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch list');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching list:', error);
+        throw error;
+    }
+};
+

@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-        name = "AppUsers",
+        name = "app_users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"email"})
         }
@@ -25,7 +25,7 @@ public class AppUser {
     @Column(nullable = true)
     private String password;
 
-    @Column(name = "userRole", nullable = false)
+    @Column(name = "user_role", nullable = false)
     private String userRole;
 
     @Column(nullable = false)

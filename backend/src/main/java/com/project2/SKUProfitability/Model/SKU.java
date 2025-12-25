@@ -23,11 +23,11 @@ public class SKU {
     @Column(nullable = false, length = 50)
     private String sku; // Seller's SKU identifier
     
-    @Column(length = 20)
-    private String asin; // Amazon ASIN (optional)
-    
     @Column(length = 200)
     private String productName;
+    
+    @Column(columnDefinition = "TEXT")
+    private String description; // Product description from CSV
     
     // Dimensions in inches
     @Column(precision = 10, scale = 2)
@@ -45,6 +45,9 @@ public class SKU {
     
     @Column(length = 50)
     private String category; // Product category
+    
+    @Column(length = 50)
+    private String sizeClassification; // Size tier: Small Standard, Large Standard, Small Oversize, Large Oversize
     
     // Pricing
     @Column(precision = 10, scale = 2)
@@ -74,12 +77,6 @@ public class SKU {
     private BigDecimal netProfit;
     
     @Column(precision = 10, scale = 2)
-    private BigDecimal profitMargin; // Percentage
-    
-    @Column(precision = 10, scale = 2)
-    private BigDecimal roi; // ROI percentage
-    
-    @Column(precision = 10, scale = 2)
     private BigDecimal maxCost; // Maximum cost to achieve target ROI
     
     @Column(nullable = false, updatable = false)
@@ -99,13 +96,13 @@ public class SKU {
         updatedAt = LocalDateTime.now();
     }
     
-    public SKU(Long userId, String sku, String asin, String productName, 
+    public SKU(Long userId, String sku, String productName, String description,
                BigDecimal length, BigDecimal width, BigDecimal height, 
                BigDecimal weight, String category, BigDecimal sellingPrice, BigDecimal cost, BigDecimal targetROI) {
         this.userId = userId;
         this.sku = sku;
-        this.asin = asin;
         this.productName = productName;
+        this.description = description;
         this.length = length;
         this.width = width;
         this.height = height;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getAllLists, createList, deleteList, removeSKUFromList } from '../services/ListService';
+import { getAllLists, createList, deleteList, removeSKUFromList, addSKUToList, getListById } from '../services/ListService';
+import { getAllSKUs } from '../services/SKUService';
 
 function ListsPage() {
     const [lists, setLists] = useState([]);
@@ -9,10 +10,23 @@ function ListsPage() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [formData, setFormData] = useState({ name: '', description: '' });
+    const [skus, setSkus] = useState([]);
+    const [showAddSKUForm, setShowAddSKUForm] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         loadLists();
+        loadSKUs();
     }, []);
+
+    const loadSKUs = async () => {
+        try {
+            const data = await getAllSKUs();
+            setSkus(data);
+        } catch (err) {
+            console.error('Failed to load SKUs:', err);
+        }
+    };
 
     const loadLists = async () => {
         try {
@@ -65,6 +79,19 @@ function ListsPage() {
         }
     };
 
+    const handleAddSKU = async (listId, skuId) => {
+        try {
+            setError('');
+            await addSKUToList(listId, skuId);
+            setSuccess('SKU added to list successfully!');
+            const updatedList = await getListById(listId);
+            setSelectedList(updatedList);
+            await loadLists();
+        } catch (err) {
+            setError(err.message || 'Failed to add SKU to list');
+        }
+    };
+
     const handleRemoveSKU = async (listId, skuId) => {
         try {
             setError('');
@@ -73,7 +100,7 @@ function ListsPage() {
             const updatedLists = await getAllLists();
             setLists(updatedLists);
             if (selectedList?.listId === listId) {
-                const updatedList = updatedLists.find(l => l.listId === listId);
+                const updatedList = await getListById(listId);
                 if (updatedList) {
                     setSelectedList(updatedList);
                 } else {
@@ -83,6 +110,26 @@ function ListsPage() {
         } catch (err) {
             setError(err.message || 'Failed to remove SKU');
         }
+    };
+
+    const getAvailableSKUs = () => {
+        if (!selectedList || !selectedList.items) {
+            return skus;
+        }
+        const skuIdsInList = new Set(selectedList.items.map(item => item.skuId));
+        return skus.filter(sku => !skuIdsInList.has(sku.skuId));
+    };
+
+    const getFilteredSKUs = () => {
+        const available = getAvailableSKUs();
+        if (!searchTerm.trim()) {
+            return available;
+        }
+        const term = searchTerm.toLowerCase();
+        return available.filter(sku => 
+            sku.sku?.toLowerCase().includes(term) ||
+            sku.productName?.toLowerCase().includes(term)
+        );
     };
 
     return (
@@ -247,11 +294,67 @@ function ListsPage() {
                     {selectedList && (
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <div className="mb-6 pb-4 border-b border-gray-200">
-                                <h2 className="text-2xl font-bold text-gray-900">{selectedList.name}</h2>
-                                {selectedList.description && (
-                                    <p className="text-gray-600 mt-2">{selectedList.description}</p>
-                                )}
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">{selectedList.name}</h2>
+                                        {selectedList.description && (
+                                            <p className="text-gray-600 mt-2">{selectedList.description}</p>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => setShowAddSKUForm(!showAddSKUForm)}
+                                        className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-indigo-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        {showAddSKUForm ? 'Cancel' : 'Add SKUs'}
+                                    </button>
+                                </div>
                             </div>
+
+                            {showAddSKUForm && (
+                                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Add SKUs to List</h3>
+                                    <div className="mb-4">
+                                        <input
+                                            type="text"
+                                            placeholder="Search SKUs by name or SKU..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        />
+                                    </div>
+                                    <div className="max-h-64 overflow-y-auto space-y-2">
+                                        {getFilteredSKUs().length === 0 ? (
+                                            <p className="text-sm text-gray-500 text-center py-4">
+                                                {searchTerm ? 'No SKUs found matching your search' : 'All SKUs are already in this list'}
+                                            </p>
+                                        ) : (
+                                            getFilteredSKUs().map((sku) => (
+                                                <div
+                                                    key={sku.skuId}
+                                                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-colors"
+                                                >
+                                                    <div className="flex-1">
+                                                        <p className="font-semibold text-gray-900">{sku.sku}</p>
+                                                        <p className="text-sm text-gray-600">{sku.productName || 'No name'}</p>
+                                                        {sku.sellingPrice && (
+                                                            <p className="text-xs text-gray-500">${parseFloat(sku.sellingPrice).toFixed(2)}</p>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleAddSKU(selectedList.listId, sku.skuId)}
+                                                        className="ml-4 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                                                    >
+                                                        Add
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             {selectedList.items && selectedList.items.length > 0 ? (
                                 <div className="overflow-x-auto">

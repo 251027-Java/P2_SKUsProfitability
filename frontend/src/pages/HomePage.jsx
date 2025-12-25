@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getAllSKUs, createSKU, deleteSKU, importSKUsFromCSV } from '../services/SKUService';
-import { getAllLists, addSKUToList } from '../services/ListService';
+import { getAllLists, addSKUToList, getListById } from '../services/ListService';
 import SKUForm from '../components/SKUForm';
 import Calculator from '../components/Calculator';
 import Sidebar from '../components/Sidebar';
@@ -32,6 +32,7 @@ function HomePage() {
     const [success, setSuccess] = useState('');
     const [lists, setLists] = useState([]);
     const [showAddToListMenu, setShowAddToListMenu] = useState(null);
+    const [selectedListForDashboard, setSelectedListForDashboard] = useState(null);
 
     useEffect(() => {
         loadSKUs();
@@ -129,26 +130,70 @@ function HomePage() {
         }
     };
 
-    const totalSKUs = skus.length;
-    const totalRevenue = skus.reduce((sum, sku) => sum + (parseFloat(sku.sellingPrice) || 0), 0);
-    const totalProfit = skus.reduce((sum, sku) => sum + (parseFloat(sku.netProfit) || 0), 0);
-    const avgMargin = skus.length > 0 
-        ? skus.reduce((sum, sku) => sum + (parseFloat(sku.profitMargin) || 0), 0) / skus.length 
+    const determineSizeTier = (length, width, height, weight) => {
+        if (!length || !width || !height || !weight) return 'Unknown';
+        
+        const len = parseFloat(length);
+        const wid = parseFloat(width);
+        const hei = parseFloat(height);
+        const wei = parseFloat(weight);
+        
+        if (len <= 15 && wid <= 12 && hei <= 0.75 && wei <= 0.75) {
+            return 'Small Standard';
+        }
+        if (len <= 18 && wid <= 14 && hei <= 8 && wei <= 20) {
+            return 'Large Standard';
+        }
+        if (len <= 60 && wid <= 30 && hei <= 30 && wei <= 70) {
+            return 'Small Oversize';
+        }
+        return 'Large Oversize';
+    };
+
+    const getDashboardSKUs = () => {
+        if (selectedListForDashboard && selectedListForDashboard.items) {
+            return selectedListForDashboard.items;
+        }
+        return skus;
+    };
+    
+    const dashboardSKUs = getDashboardSKUs();
+    const totalSKUs = dashboardSKUs.length;
+    
+    const skusWithPrice = dashboardSKUs.filter(sku => sku.sellingPrice && parseFloat(sku.sellingPrice) > 0);
+    const avgAmazonPrice = skusWithPrice.length > 0
+        ? skusWithPrice.reduce((sum, sku) => sum + parseFloat(sku.sellingPrice), 0) / skusWithPrice.length
         : 0;
-    const skusWithROI = skus.filter(sku => sku.roi != null);
-    const avgROI = skusWithROI.length > 0
-        ? skusWithROI.reduce((sum, sku) => sum + (parseFloat(sku.roi) || 0), 0) / skusWithROI.length
+    
+    const skusWithFees = dashboardSKUs.filter(sku => sku.totalFees != null);
+    const avgTotalFees = skusWithFees.length > 0
+        ? skusWithFees.reduce((sum, sku) => sum + parseFloat(sku.totalFees || 0), 0) / skusWithFees.length
         : 0;
+    
+    const uniqueCategories = [...new Set(dashboardSKUs.map(sku => sku.category).filter(cat => cat))].length;
+    
+    const negativeProfitCount = dashboardSKUs.filter(sku => {
+        const profit = parseFloat(sku.netProfit || 0);
+        return profit < 0;
+    }).length;
+    
+    const categoryDistribution = dashboardSKUs.reduce((acc, sku) => {
+        const category = sku.category || 'Uncategorized';
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+    }, {});
+    
+    const sizeDistribution = dashboardSKUs.reduce((acc, sku) => {
+        const sizeTier = determineSizeTier(sku.length, sku.width, sku.height, sku.weight);
+        acc[sizeTier] = (acc[sizeTier] || 0) + 1;
+        return acc;
+    }, {});
 
     const renderContent = () => {
         switch (activeSection) {
             case 'calculator':
                 return (
                     <div>
-                        <div className="mb-8">
-                            <h1 className="text-4xl font-bold text-gray-900 mb-2">Calculator</h1>
-                            <p className="text-gray-600 text-lg">Calculate fees and ROI for your products</p>
-                        </div>
                         <Calculator />
                     </div>
                 );
@@ -250,9 +295,6 @@ function HomePage() {
                                                 <tr key={sku.skuId} className="hover:bg-gray-50 transition-colors duration-150">
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm font-semibold text-gray-900">{sku.sku}</div>
-                                                        {sku.asin && (
-                                                            <div className="text-xs text-gray-500 mt-0.5">ASIN: {sku.asin}</div>
-                                                        )}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="text-sm font-medium text-gray-900">{sku.productName || '-'}</div>
@@ -273,14 +315,34 @@ function HomePage() {
                                                         ${parseFloat(sku.netProfit || 0).toFixed(2)}
                                                     </td>
                                                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${
-                                                        parseFloat(sku.profitMargin || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                                                        (() => {
+                                                            const profitMargin = sku.sellingPrice && sku.sellingPrice > 0 
+                                                                ? (parseFloat(sku.netProfit || 0) / parseFloat(sku.sellingPrice)) * 100 
+                                                                : 0;
+                                                            return profitMargin >= 0 ? 'text-green-600' : 'text-red-600';
+                                                        })()
                                                     }`}>
-                                                        {parseFloat(sku.profitMargin || 0).toFixed(1)}%
+                                                        {(() => {
+                                                            const profitMargin = sku.sellingPrice && sku.sellingPrice > 0 
+                                                                ? (parseFloat(sku.netProfit || 0) / parseFloat(sku.sellingPrice)) * 100 
+                                                                : 0;
+                                                            return profitMargin.toFixed(1) + '%';
+                                                        })()}
                                                     </td>
                                                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${
-                                                        sku.roi ? (parseFloat(sku.roi) >= 0 ? 'text-green-600' : 'text-red-600') : 'text-gray-400'
+                                                        (() => {
+                                                            const roi = sku.cost && sku.cost > 0 
+                                                                ? (parseFloat(sku.netProfit || 0) / parseFloat(sku.cost)) * 100 
+                                                                : null;
+                                                            return roi !== null ? (roi >= 0 ? 'text-green-600' : 'text-red-600') : 'text-gray-400';
+                                                        })()
                                                     }`}>
-                                                        {sku.roi ? `${parseFloat(sku.roi).toFixed(1)}%` : '-'}
+                                                        {(() => {
+                                                            const roi = sku.cost && sku.cost > 0 
+                                                                ? (parseFloat(sku.netProfit || 0) / parseFloat(sku.cost)) * 100 
+                                                                : null;
+                                                            return roi !== null ? `${roi.toFixed(1)}%` : '-';
+                                                        })()}
                                                     </td>
                                                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${
                                                         sku.maxCost ? 'text-blue-600' : 'text-gray-400'
@@ -337,11 +399,35 @@ function HomePage() {
                 );
             case 'dashboard':
             default:
-                const recentSKUs = [...skus].sort((a, b) => (b.skuId || 0) - (a.skuId || 0)).slice(0, 5);
-                const topPerformers = [...skus]
-                    .filter(sku => sku.roi != null && parseFloat(sku.roi) > 0)
-                    .sort((a, b) => parseFloat(b.roi || 0) - parseFloat(a.roi || 0))
-                    .slice(0, 5);
+                const skuIdsInLists = new Set();
+                lists.forEach(list => {
+                    if (list.items) {
+                        list.items.forEach(item => skuIdsInLists.add(item.skuId));
+                    }
+                });
+                
+                const unlistedSKUs = skus.filter(sku => !skuIdsInLists.has(sku.skuId));
+                
+                const productsNeedingAttention = skus.filter(sku => {
+                    const profit = parseFloat(sku.netProfit || 0);
+                    return profit < 0;
+                });
+                
+                const listsWithMetrics = lists.map(list => {
+                    const listSKUs = list.items || [];
+                    const listSKUsWithPrice = listSKUs.filter(sku => sku.sellingPrice && parseFloat(sku.sellingPrice) > 0);
+                    const avgPrice = listSKUsWithPrice.length > 0
+                        ? listSKUsWithPrice.reduce((sum, sku) => sum + parseFloat(sku.sellingPrice), 0) / listSKUsWithPrice.length
+                        : 0;
+                    const negativeCount = listSKUs.filter(sku => parseFloat(sku.netProfit || 0) < 0).length;
+                    
+                    return {
+                        ...list,
+                        avgPrice,
+                        negativeCount,
+                        itemCount: list.itemCount || listSKUs.length
+                    };
+                });
                 
                 return (
                     <>
@@ -352,7 +438,7 @@ function HomePage() {
                                         Dashboard
                                     </h1>
                                     <p className="text-gray-600 text-lg">
-                                        Quick overview and recent activity
+                                        Overview of your product portfolio and lists
                                     </p>
                                 </div>
                             </div>
@@ -366,44 +452,105 @@ function HomePage() {
                                             </svg>
                                         </div>
                                     </div>
-                                    <p className="text-sm font-medium text-gray-600 mb-1">Total SKUs</p>
-                                    <p className="text-3xl font-bold text-gray-900">{totalSKUs}</p>
+                                    <p className="text-sm font-medium text-gray-600 mb-1">Total Products</p>
+                                    <p className="text-3xl font-bold text-gray-900">{skus.length}</p>
+                                    <p className="text-xs text-gray-500 mt-1">Imported SKUs</p>
                                 </div>
                                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
                                     <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-green-100 rounded-lg">
-                                            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        <div className="p-3 bg-blue-100 rounded-lg">
+                                            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                             </svg>
                                         </div>
                                     </div>
-                                    <p className="text-sm font-medium text-gray-600 mb-1">Total Profit</p>
-                                    <p className={`text-3xl font-bold ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        ${totalProfit.toFixed(2)}
+                                    <p className="text-sm font-medium text-gray-600 mb-1">Active Lists</p>
+                                    <p className="text-3xl font-bold text-gray-900">{lists.length}</p>
+                                    <p className="text-xs text-gray-500 mt-1">Organized lists</p>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className={`p-3 rounded-lg ${productsNeedingAttention.length > 0 ? 'bg-red-100' : 'bg-green-100'}`}>
+                                            <svg className={`w-6 h-6 ${productsNeedingAttention.length > 0 ? 'text-red-600' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-600 mb-1">Need Attention</p>
+                                    <p className={`text-3xl font-bold ${productsNeedingAttention.length > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                        {productsNeedingAttention.length}
                                     </p>
+                                    <p className="text-xs text-gray-500 mt-1">Negative profit potential</p>
                                 </div>
                                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
                                     <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-purple-100 rounded-lg">
-                                            <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        <div className={`p-3 rounded-lg ${unlistedSKUs.length > 0 ? 'bg-amber-100' : 'bg-gray-100'}`}>
+                                            <svg className={`w-6 h-6 ${unlistedSKUs.length > 0 ? 'text-amber-600' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                         </div>
                                     </div>
-                                    <p className="text-sm font-medium text-gray-600 mb-1">Avg. Margin</p>
-                                    <p className="text-3xl font-bold text-gray-900">{avgMargin.toFixed(1)}%</p>
+                                    <p className="text-sm font-medium text-gray-600 mb-1">Unlisted Products</p>
+                                    <p className={`text-3xl font-bold ${unlistedSKUs.length > 0 ? 'text-amber-600' : 'text-gray-600'}`}>
+                                        {unlistedSKUs.length}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">Not in any list</p>
                                 </div>
-                                {skusWithROI.length > 0 && (
-                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="p-3 bg-orange-100 rounded-lg">
-                                                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                </svg>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-xl font-bold text-gray-900">Your Lists Overview</h2>
+                                    <button
+                                        onClick={() => setActiveSection('lists')}
+                                        className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                                    >
+                                        Manage Lists →
+                                    </button>
+                                </div>
+                                {lists.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500 mb-4">No lists created yet</p>
+                                        <button
+                                            onClick={() => setActiveSection('lists')}
+                                            className="text-indigo-600 hover:text-indigo-800 font-medium"
+                                        >
+                                            Create your first list →
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {listsWithMetrics.map((list) => (
+                                            <div
+                                                key={list.listId}
+                                                onClick={() => setActiveSection('lists')}
+                                                className="p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <h3 className="font-semibold text-gray-900">{list.name}</h3>
+                                                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
+                                                        {list.itemCount || 0} items
+                                                    </span>
+                                                </div>
+                                                {list.description && (
+                                                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{list.description}</p>
+                                                )}
+                                                <div className="space-y-1 text-xs">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-500">Avg. Price:</span>
+                                                        <span className="font-medium text-gray-900">
+                                                            ${list.avgPrice > 0 ? list.avgPrice.toFixed(2) : '0.00'}
+                                                        </span>
+                                                    </div>
+                                                    {list.negativeCount > 0 && (
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-500">Need Attention:</span>
+                                                            <span className="font-medium text-red-600">{list.negativeCount}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Avg. ROI</p>
-                                        <p className="text-3xl font-bold text-gray-900">{avgROI.toFixed(1)}%</p>
+                                        ))}
                                     </div>
                                 )}
                             </div>
@@ -411,7 +558,7 @@ function HomePage() {
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-gray-900">Recent SKUs</h2>
+                                        <h2 className="text-xl font-bold text-gray-900">Unlisted Products</h2>
                                         <button
                                             onClick={() => setActiveSection('skus')}
                                             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
@@ -419,35 +566,44 @@ function HomePage() {
                                             View All →
                                         </button>
                                     </div>
-                                    {recentSKUs.length === 0 ? (
+                                    {unlistedSKUs.length === 0 ? (
                                         <div className="text-center py-8">
-                                            <p className="text-gray-500">No SKUs yet</p>
+                                            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                                                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                            <p className="text-gray-600 font-medium">All products are organized!</p>
+                                            <p className="text-sm text-gray-500 mt-1">Every product is in at least one list</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
-                                            {recentSKUs.map((sku) => (
-                                                <div key={sku.skuId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-150">
+                                            {unlistedSKUs.slice(0, 5).map((sku) => (
+                                                <div key={sku.skuId} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-200">
                                                     <div className="flex-1">
                                                         <p className="font-semibold text-gray-900">{sku.sku}</p>
                                                         <p className="text-sm text-gray-600">{sku.productName || 'No name'}</p>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <p className="font-semibold text-gray-900">${parseFloat(sku.sellingPrice || 0).toFixed(2)}</p>
-                                                        {sku.roi != null && (
-                                                            <p className={`text-sm font-medium ${parseFloat(sku.roi) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                                {parseFloat(sku.roi).toFixed(1)}% ROI
-                                                            </p>
-                                                        )}
-                                                    </div>
+                                                    <button
+                                                        onClick={() => setActiveSection('skus')}
+                                                        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                                                    >
+                                                        Add to List →
+                                                    </button>
                                                 </div>
                                             ))}
+                                            {unlistedSKUs.length > 5 && (
+                                                <p className="text-sm text-gray-500 text-center pt-2">
+                                                    +{unlistedSKUs.length - 5} more unlisted products
+                                                </p>
+                                            )}
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-gray-900">Top Performers</h2>
+                                        <h2 className="text-xl font-bold text-gray-900">Products Needing Attention</h2>
                                         <button
                                             onClick={() => setActiveSection('skus')}
                                             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
@@ -455,24 +611,40 @@ function HomePage() {
                                             View All →
                                         </button>
                                     </div>
-                                    {topPerformers.length === 0 ? (
+                                    {productsNeedingAttention.length === 0 ? (
                                         <div className="text-center py-8">
-                                            <p className="text-gray-500">No ROI data available</p>
+                                            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                                                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <p className="text-gray-600 font-medium">All products look good!</p>
+                                            <p className="text-sm text-gray-500 mt-1">No products with negative profit potential</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
-                                            {topPerformers.map((sku) => (
-                                                <div key={sku.skuId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-150">
+                                            {productsNeedingAttention.slice(0, 5).map((sku) => (
+                                                <div key={sku.skuId} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
                                                     <div className="flex-1">
                                                         <p className="font-semibold text-gray-900">{sku.sku}</p>
                                                         <p className="text-sm text-gray-600">{sku.productName || 'No name'}</p>
+                                                        <p className="text-xs text-red-600 mt-1">
+                                                            Loss: ${Math.abs(parseFloat(sku.netProfit || 0)).toFixed(2)}
+                                                        </p>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <p className="font-semibold text-green-600">{parseFloat(sku.roi || 0).toFixed(1)}% ROI</p>
-                                                        <p className="text-sm text-gray-600">${parseFloat(sku.netProfit || 0).toFixed(2)} profit</p>
-                                                    </div>
+                                                    <button
+                                                        onClick={() => setActiveSection('skus')}
+                                                        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                                                    >
+                                                        Review →
+                                                    </button>
                                                 </div>
                                             ))}
+                                            {productsNeedingAttention.length > 5 && (
+                                                <p className="text-sm text-gray-500 text-center pt-2">
+                                                    +{productsNeedingAttention.length - 5} more products need attention
+                                                </p>
+                                            )}
                                         </div>
                                     )}
                                 </div>

@@ -54,15 +54,54 @@ public class FBAFeeCalculatorService {
         
         // Calculate cubic feet
         BigDecimal cubicFeet = length.multiply(width).multiply(height)
-                .divide(new BigDecimal("1728"), 4, RoundingMode.HALF_UP); // Convert cubic inches to cubic feet
+                .divide(new BigDecimal("1728"), 4, RoundingMode.HALF_UP);
         
-        // Standard storage fee: $0.75 per cubic foot per month
         BigDecimal storageFeePerCubicFoot = new BigDecimal("0.75");
         
         return cubicFeet.multiply(storageFeePerCubicFoot);
     }
     
-    private String determineSizeTier(BigDecimal length, BigDecimal width, 
+    public BigDecimal calculateStorageFeeJanSep(BigDecimal length, BigDecimal width, BigDecimal height, BigDecimal months) {
+        if (length == null || width == null || height == null || months == null) {
+            return BigDecimal.ZERO;
+        }
+        
+        BigDecimal cubicFeet = length.multiply(width).multiply(height)
+                .divide(new BigDecimal("1728"), 4, RoundingMode.HALF_UP);
+        
+        BigDecimal storageFeePerCubicFoot = new BigDecimal("0.75");
+        return cubicFeet.multiply(storageFeePerCubicFoot).multiply(months).setScale(2, RoundingMode.HALF_UP);
+    }
+    
+    public BigDecimal calculateStorageFeeOctDec(BigDecimal length, BigDecimal width, BigDecimal height, BigDecimal months) {
+        if (length == null || width == null || height == null || months == null) {
+            return BigDecimal.ZERO;
+        }
+        
+        BigDecimal cubicFeet = length.multiply(width).multiply(height)
+                .divide(new BigDecimal("1728"), 4, RoundingMode.HALF_UP);
+        
+        BigDecimal storageFeePerCubicFoot = new BigDecimal("1.92");
+        return cubicFeet.multiply(storageFeePerCubicFoot).multiply(months).setScale(2, RoundingMode.HALF_UP);
+    }
+    
+    public BigDecimal calculateUnitFreightCost(BigDecimal freightCost, BigDecimal freightCostUnit, 
+                                                BigDecimal length, BigDecimal width, BigDecimal height) {
+        if (freightCost == null || freightCostUnit == null || 
+            length == null || width == null || height == null) {
+            return BigDecimal.ZERO;
+        }
+        
+        if (freightCostUnit.compareTo(new BigDecimal("1")) == 0) {
+            BigDecimal cubicInches = length.multiply(width).multiply(height);
+            BigDecimal cubicMeters = cubicInches.divide(new BigDecimal("61023.7"), 4, RoundingMode.HALF_UP);
+            return freightCost.multiply(cubicMeters).setScale(2, RoundingMode.HALF_UP);
+        }
+        
+        return freightCost.setScale(2, RoundingMode.HALF_UP);
+    }
+    
+    public String determineSizeTier(BigDecimal length, BigDecimal width, 
                                      BigDecimal height, BigDecimal weight) {
         if (length.compareTo(SMALL_STANDARD_MAX_LENGTH) <= 0 &&
             width.compareTo(SMALL_STANDARD_MAX_WIDTH) <= 0 &&

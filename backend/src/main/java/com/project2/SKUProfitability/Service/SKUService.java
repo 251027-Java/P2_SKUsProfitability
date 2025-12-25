@@ -38,8 +38,8 @@ public class SKUService {
         SKU sku = new SKU(
                 userId,
                 dto.sku(),
-                dto.asin(),
                 dto.productName(),
+                dto.description(),
                 dto.length(),
                 dto.width(),
                 dto.height(),
@@ -91,19 +91,20 @@ public class SKUService {
     
     private SKUCreateDTO parseCSVRecord(CSVRecord record) {
         String sku = getRequiredField(record, "SKU");
-        String asin = getOptionalField(record, "ASIN");
         String productName = getOptionalField(record, "Product Name");
+        String description = getOptionalField(record, "Description");
         BigDecimal length = parseDecimal(record, "Length");
         BigDecimal width = parseDecimal(record, "Width");
         BigDecimal height = parseDecimal(record, "Height");
         BigDecimal weight = parseDecimal(record, "Weight");
         String category = getOptionalField(record, "Category");
+        // Average Amazon price over 90 days
         BigDecimal sellingPrice = parseDecimal(record, "Selling Price");
         BigDecimal cost = parseDecimal(record, "Cost");
         BigDecimal targetROI = parseDecimal(record, "Target ROI");
         
         return new SKUCreateDTO(
-                sku, asin, productName, length, width, height, 
+                sku, productName, description, length, width, height, 
                 weight, category, sellingPrice, cost, targetROI
         );
     }
@@ -143,6 +144,12 @@ public class SKUService {
     }
     
     private void calculateAndSetFees(SKU sku) {
+        // Calculate and store size classification
+        String sizeClassification = feeCalculatorService.determineSizeTier(
+                sku.getLength(), sku.getWidth(), sku.getHeight(), sku.getWeight()
+        );
+        sku.setSizeClassification(sizeClassification);
+        
         BigDecimal fbaFee = feeCalculatorService.calculateFBAFulfillmentFee(
                 sku.getLength(), sku.getWidth(), sku.getHeight(), sku.getWeight()
         );
@@ -168,16 +175,7 @@ public class SKUService {
         );
         sku.setNetProfit(netProfit);
         
-        BigDecimal profitMargin = feeCalculatorService.calculateProfitMargin(
-                sku.getSellingPrice(), netProfit
-        );
-        sku.setProfitMargin(profitMargin);
-        
-        if (sku.getCost() != null && sku.getCost().compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal roi = feeCalculatorService.calculateROI(sku.getCost(), netProfit);
-            sku.setRoi(roi);
-        }
-        
+        // Calculate maxCost if targetROI is provided
         if (sku.getTargetROI() != null && sku.getTargetROI().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal maxCost = feeCalculatorService.calculateMaxCostForROI(
                     sku.getSellingPrice(), totalFees, sku.getTargetROI()
@@ -198,20 +196,14 @@ public class SKUService {
                 .map(this::convertToDTO);
     }
     
-    public Optional<SKUDTO> searchBySkuOrAsin(Long userId, String searchTerm) {
+    public Optional<SKUDTO> searchBySku(Long userId, String searchTerm) {
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return Optional.empty();
         }
         
         String trimmedSearch = searchTerm.trim();
-        
         Optional<SKU> skuBySku = skuRepository.findByUserIdAndSku(userId, trimmedSearch);
-        if (skuBySku.isPresent()) {
-            return skuBySku.map(this::convertToDTO);
-        }
-        
-        Optional<SKU> skuByAsin = skuRepository.findByUserIdAndAsin(userId, trimmedSearch);
-        return skuByAsin.map(this::convertToDTO);
+        return skuBySku.map(this::convertToDTO);
     }
     
     public SKUDTO updateSKU(Long skuId, Long userId, SKUCreateDTO dto) {
@@ -220,8 +212,8 @@ public class SKUService {
                 .orElseThrow(() -> new IllegalArgumentException("SKU not found"));
         
         sku.setSku(dto.sku());
-        sku.setAsin(dto.asin());
         sku.setProductName(dto.productName());
+        sku.setDescription(dto.description());
         sku.setLength(dto.length());
         sku.setWidth(dto.width());
         sku.setHeight(dto.height());
@@ -250,13 +242,14 @@ public class SKUService {
                 sku.getSkuId(),
                 sku.getUserId(),
                 sku.getSku(),
-                sku.getAsin(),
                 sku.getProductName(),
+                sku.getDescription(),
                 sku.getLength(),
                 sku.getWidth(),
                 sku.getHeight(),
                 sku.getWeight(),
                 sku.getCategory(),
+                sku.getSizeClassification(),
                 sku.getSellingPrice(),
                 sku.getCost(),
                 sku.getTargetROI(),
@@ -265,8 +258,6 @@ public class SKUService {
                 sku.getStorageFee(),
                 sku.getTotalFees(),
                 sku.getNetProfit(),
-                sku.getProfitMargin(),
-                sku.getRoi(),
                 sku.getMaxCost(),
                 sku.getCreatedAt(),
                 sku.getUpdatedAt()

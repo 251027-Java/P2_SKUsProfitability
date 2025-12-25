@@ -65,7 +65,7 @@ public class SKUController {
             HttpServletRequest request) {
         try {
             Long userId = getUserIdFromRequest(request);
-            Optional<SKUDTO> sku = skuService.searchBySkuOrAsin(userId, q);
+            Optional<SKUDTO> sku = skuService.searchBySku(userId, q);
             return sku.map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {

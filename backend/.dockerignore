@@ -7,4 +7,7 @@ mvnw.cmd
 *.md
 .idea
 .vscode
+.DS_Store
+*.log
+*.iml
 

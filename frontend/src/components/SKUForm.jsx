@@ -4,7 +4,6 @@ import { searchSKU } from '../services/SKUService';
 function SKUForm({ onSave, onCancel, initialData = null }) {
     const [formData, setFormData] = useState({
         sku: initialData?.sku || '',
-        asin: initialData?.asin || '',
         productName: initialData?.productName || '',
         length: initialData?.length || '',
         width: initialData?.width || '',
@@ -37,7 +36,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
 
     const handleSearch = async () => {
         if (!searchTerm.trim()) {
-            setSearchError('Please enter a SKU or ASIN to search');
+            setSearchError('Please enter a SKU to search');
             return;
         }
 
@@ -49,7 +48,6 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
             if (foundSKU) {
                 setFormData({
                     sku: foundSKU.sku || '',
-                    asin: foundSKU.asin || '',
                     productName: foundSKU.productName || '',
                     length: foundSKU.length || '',
                     width: foundSKU.width || '',
@@ -63,7 +61,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                 setSearchTerm('');
                 setSearchError('');
             } else {
-                setSearchError('Product not found. Please check the SKU or ASIN.');
+                setSearchError('Product not found. Please check the SKU.');
             }
         } catch (err) {
             setSearchError('Failed to search. Please try again.');
@@ -122,7 +120,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-200">
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Search by SKU or ASIN
+                    Search by SKU
                 </label>
                 <div className="flex gap-3">
                     <input
@@ -130,7 +128,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyPress={handleSearchKeyPress}
-                        placeholder="Enter SKU or ASIN to auto-fill fields..."
+                        placeholder="Enter SKU to auto-fill fields..."
                         className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
                     />
                     <button
@@ -181,20 +179,6 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                         placeholder="ABC-123"
                     />
                     {errors.sku && <p className="text-red-600 text-sm mt-1 font-medium">{errors.sku}</p>}
-                </div>
-
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        ASIN
-                    </label>
-                    <input
-                        type="text"
-                        name="asin"
-                        value={formData.asin}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                        placeholder="B08XYZ1234"
-                    />
                 </div>
 
                 <div className="md:col-span-2">

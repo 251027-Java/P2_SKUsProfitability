@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 
 public record SKUCreateDTO(
         String sku,
-        String asin,
         String productName,
+        String description,
         BigDecimal length,
         BigDecimal width,
         BigDecimal height,

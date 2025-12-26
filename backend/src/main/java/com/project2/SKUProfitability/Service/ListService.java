@@ -3,11 +3,14 @@ package com.project2.SKUProfitability.Service;
 import com.project2.SKUProfitability.DTO.ListCreateDTO;
 import com.project2.SKUProfitability.DTO.ListDTO;
 import com.project2.SKUProfitability.DTO.SKUDTO;
+import com.project2.SKUProfitability.Exception.ResourceNotFoundException;
 import com.project2.SKUProfitability.Model.ListItem;
 import com.project2.SKUProfitability.Model.SKU;
 import com.project2.SKUProfitability.Repository.ListItemRepository;
 import com.project2.SKUProfitability.Repository.ListRepository;
 import com.project2.SKUProfitability.Repository.SKURepository;
+import com.project2.SKUProfitability.Util.DataTransformUtil;
+import com.project2.SKUProfitability.Util.ValidationUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,11 +32,20 @@ public class ListService {
     }
 
     public ListDTO createList(Long userId, ListCreateDTO dto) {
+        ValidationUtil.validateRequired(dto.name(), "List Name");
+        if (dto.name().length() > 200) {
+            throw new IllegalArgumentException("List name must be 200 characters or less");
+        }
+        
         if (listRepository.existsByUserIdAndName(userId, dto.name())) {
             throw new IllegalArgumentException("List with this name already exists");
         }
 
-        com.project2.SKUProfitability.Model.List list = new com.project2.SKUProfitability.Model.List(userId, dto.name(), dto.description());
+        com.project2.SKUProfitability.Model.List list = new com.project2.SKUProfitability.Model.List(
+            userId, 
+            DataTransformUtil.normalizeString(dto.name()), 
+            dto.description() != null ? DataTransformUtil.normalizeString(dto.description()) : null
+        );
         com.project2.SKUProfitability.Model.List savedList = listRepository.save(list);
         return convertToDTO(savedList);
     }
@@ -51,35 +63,40 @@ public class ListService {
     }
 
     public ListDTO updateList(Long listId, Long userId, ListCreateDTO dto) {
+        ValidationUtil.validateRequired(dto.name(), "List Name");
+        if (dto.name().length() > 200) {
+            throw new IllegalArgumentException("List name must be 200 characters or less");
+        }
+        
         com.project2.SKUProfitability.Model.List list = listRepository.findById(listId)
                 .filter(l -> l.getUserId().equals(userId))
-                .orElseThrow(() -> new IllegalArgumentException("List not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("List", listId));
 
         if (!list.getName().equals(dto.name()) && listRepository.existsByUserIdAndName(userId, dto.name())) {
             throw new IllegalArgumentException("List with this name already exists");
         }
 
-        list.setName(dto.name());
-        list.setDescription(dto.description());
+        list.setName(DataTransformUtil.normalizeString(dto.name()));
+        list.setDescription(dto.description() != null ? DataTransformUtil.normalizeString(dto.description()) : null);
         com.project2.SKUProfitability.Model.List updatedList = listRepository.save(list);
         return convertToDTO(updatedList);
     }
-
+    
     public void deleteList(Long listId, Long userId) {
         com.project2.SKUProfitability.Model.List list = listRepository.findById(listId)
                 .filter(l -> l.getUserId().equals(userId))
-                .orElseThrow(() -> new IllegalArgumentException("List not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("List", listId));
         listRepository.delete(list);
     }
-
+    
     public ListDTO addSKUToList(Long listId, Long skuId, Long userId) {
         com.project2.SKUProfitability.Model.List list = listRepository.findById(listId)
                 .filter(l -> l.getUserId().equals(userId))
-                .orElseThrow(() -> new IllegalArgumentException("List not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("List", listId));
 
         SKU sku = skuRepository.findById(skuId)
                 .filter(s -> s.getUserId().equals(userId))
-                .orElseThrow(() -> new IllegalArgumentException("SKU not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("SKU", skuId));
 
         if (listItemRepository.findByList_ListIdAndSku_SkuId(listId, skuId).isPresent()) {
             throw new IllegalArgumentException("SKU already in list");
@@ -93,7 +110,7 @@ public class ListService {
     public ListDTO removeSKUFromList(Long listId, Long skuId, Long userId) {
         com.project2.SKUProfitability.Model.List list = listRepository.findById(listId)
                 .filter(l -> l.getUserId().equals(userId))
-                .orElseThrow(() -> new IllegalArgumentException("List not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("List", listId));
 
         listItemRepository.deleteByList_ListIdAndSku_SkuId(listId, skuId);
         return convertToDTO(list);
@@ -102,7 +119,7 @@ public class ListService {
     private ListDTO convertToDTO(com.project2.SKUProfitability.Model.List list) {
         List<ListItem> items = listItemRepository.findByList_ListId(list.getListId());
         List<SKUDTO> skuDTOs = items.stream()
-                .map(item -> skuService.convertToDTO(item.getSku()))
+                .map(item -> DataTransformUtil.toSKUDTO(item.getSku()))
                 .toList();
 
         return new ListDTO(

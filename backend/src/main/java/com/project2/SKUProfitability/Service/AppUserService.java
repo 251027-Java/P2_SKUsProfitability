@@ -4,6 +4,7 @@ import com.project2.SKUProfitability.DTO.AppUserDTO;
 import com.project2.SKUProfitability.DTO.RegisterCustomerDTO;
 import com.project2.SKUProfitability.Model.AppUser;
 import com.project2.SKUProfitability.Repository.AppUserRepository;
+import com.project2.SKUProfitability.Util.ValidationUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,11 @@ public class AppUserService {
     }
 
     public AppUserDTO registerNewCustomer(RegisterCustomerDTO dto) {
+        ValidationUtil.validateEmail(dto.email());
+        ValidationUtil.validatePassword(dto.password());
+        ValidationUtil.validateName(dto.firstName(), "First Name");
+        ValidationUtil.validateName(dto.lastName(), "Last Name");
+        
         if (repository.findByEmail(dto.email()).isPresent()) {
             throw new IllegalArgumentException("Email already in use.");
         }
@@ -32,10 +38,10 @@ public class AppUserService {
                 dto.lastName()
         );
 
-        return AppUserToDto(repository.save(user));
+        return appUserToDto(repository.save(user));
     }
 
-    private AppUserDTO AppUserToDto(AppUser user) {
+    private AppUserDTO appUserToDto(AppUser user) {
         return new AppUserDTO(
                 user.getUserId(),
                 user.getEmail(),

@@ -18,18 +18,17 @@ public class SKU {
     private Long skuId;
     
     @Column(nullable = false)
-    private Long userId; // Foreign key to AppUser
+    private Long userId;
     
-    @Column(nullable = false, length = 50)
-    private String sku; // Seller's SKU identifier
+    @Column(nullable = false, unique = true, length = 50)
+    private String sku;
     
-    @Column(length = 200)
+    @Column(nullable = false, length = 200)
     private String productName;
     
-    @Column(columnDefinition = "TEXT")
-    private String description; // Product description from CSV
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String description;
     
-    // Dimensions in inches
     @Column(precision = 10, scale = 2)
     private BigDecimal length;
     
@@ -39,27 +38,18 @@ public class SKU {
     @Column(precision = 10, scale = 2)
     private BigDecimal height;
     
-    // Weight in pounds
     @Column(precision = 10, scale = 2)
     private BigDecimal weight;
     
-    @Column(length = 50)
-    private String category; // Product category
+    @Column(nullable = false, length = 50)
+    private String category;
     
     @Column(length = 50)
-    private String sizeClassification; // Size tier: Small Standard, Large Standard, Small Oversize, Large Oversize
+    private String sizeClassification;
     
-    // Pricing
     @Column(precision = 10, scale = 2)
     private BigDecimal sellingPrice;
     
-    @Column(precision = 10, scale = 2)
-    private BigDecimal cost; // Product cost
-    
-    @Column(precision = 10, scale = 2)
-    private BigDecimal targetROI; // Target ROI percentage
-    
-    // Amazon Fees (calculated)
     @Column(precision = 10, scale = 2)
     private BigDecimal fbaFulfillmentFee;
     
@@ -67,17 +57,13 @@ public class SKU {
     private BigDecimal referralFee;
     
     @Column(precision = 10, scale = 2)
-    private BigDecimal storageFee; // Monthly storage fee
+    private BigDecimal storageFee;
     
     @Column(precision = 10, scale = 2)
     private BigDecimal totalFees;
     
-    // Profitability
     @Column(precision = 10, scale = 2)
     private BigDecimal netProfit;
-    
-    @Column(precision = 10, scale = 2)
-    private BigDecimal maxCost; // Maximum cost to achieve target ROI
     
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -98,7 +84,7 @@ public class SKU {
     
     public SKU(Long userId, String sku, String productName, String description,
                BigDecimal length, BigDecimal width, BigDecimal height, 
-               BigDecimal weight, String category, BigDecimal sellingPrice, BigDecimal cost, BigDecimal targetROI) {
+               BigDecimal weight, String category, BigDecimal sellingPrice) {
         this.userId = userId;
         this.sku = sku;
         this.productName = productName;
@@ -109,8 +95,6 @@ public class SKU {
         this.weight = weight;
         this.category = category;
         this.sellingPrice = sellingPrice;
-        this.cost = cost;
-        this.targetROI = targetROI;
     }
 }
 

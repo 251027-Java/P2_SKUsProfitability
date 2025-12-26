@@ -34,7 +34,6 @@ public class AppUser {
     @Column(nullable = false)
     private String lastName;
 
-    // Constructor for creating new users
     public AppUser(String email, String password, String userRole, String firstName, String lastName) {
         this.email = email;
         this.password = password;

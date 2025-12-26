@@ -11,8 +11,6 @@ public record SKUCreateDTO(
         BigDecimal height,
         BigDecimal weight,
         String category,
-        BigDecimal sellingPrice,
-        BigDecimal cost,
-        BigDecimal targetROI
+        BigDecimal sellingPrice
 ) {}
 

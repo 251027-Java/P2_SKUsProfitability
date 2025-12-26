@@ -16,14 +16,11 @@ public record SKUDTO(
         String category,
         String sizeClassification,
         BigDecimal sellingPrice,
-        BigDecimal cost,
-        BigDecimal targetROI,
         BigDecimal fbaFulfillmentFee,
         BigDecimal referralFee,
         BigDecimal storageFee,
         BigDecimal totalFees,
         BigDecimal netProfit,
-        BigDecimal maxCost,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

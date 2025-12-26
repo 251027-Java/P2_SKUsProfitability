@@ -39,13 +39,8 @@ public class JwtUtil {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (Exception e) {
-            System.err.println("JWT Validation Failed. Type: " + e.getClass().getSimpleName() + ". Message: " + e.getMessage());
             return false;
         }
-    }
-
-    public String getEmailFromToken(String token) {
-        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getSubject();
     }
 
     public String getRoleFromToken(String token) {

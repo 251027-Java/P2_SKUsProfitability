@@ -1,11 +1,13 @@
 package com.project2.SKUProfitability.Controller;
 
 import com.project2.SKUProfitability.Service.FBAFeeCalculatorService;
+import com.project2.SKUProfitability.Util.CalculationUtil;
+import com.project2.SKUProfitability.Util.ValidationUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -20,6 +22,13 @@ public class FeeCalculatorController {
     @PostMapping("/calculate")
     public ResponseEntity<Map<String, Object>> calculateFees(@RequestBody FeeCalculationRequest request) {
         try {
+            ValidationUtil.validateDimension(request.length(), "Length");
+            ValidationUtil.validateDimension(request.width(), "Width");
+            ValidationUtil.validateDimension(request.height(), "Height");
+            ValidationUtil.validateWeight(request.weight());
+            ValidationUtil.validatePrice(request.sellingPrice(), "Selling Price");
+            ValidationUtil.validateTimeInStorage(request.timeInStorage());
+            
             String sizeTier = feeCalculatorService.determineSizeTier(
                     request.length(),
                     request.width(),
@@ -36,8 +45,7 @@ public class FeeCalculatorController {
             
             BigDecimal referralFee;
             if (request.referralFeePercentage() != null && request.referralFeePercentage().compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal referralPercentage = request.referralFeePercentage().divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
-                referralFee = request.sellingPrice().multiply(referralPercentage);
+                referralFee = CalculationUtil.calculatePercentage(request.sellingPrice(), request.referralFeePercentage());
                 referralFee = referralFee.max(new BigDecimal("0.30"));
             } else {
                 referralFee = feeCalculatorService.calculateReferralFee(
@@ -74,37 +82,40 @@ public class FeeCalculatorController {
             BigDecimal otherCosts = BigDecimal.ZERO;
             if (request.otherCosts() != null && request.otherCosts().compareTo(BigDecimal.ZERO) > 0) {
                 if (request.otherCostsType() != null && request.otherCostsType().equals("percentage")) {
-                    BigDecimal otherCostsPercentage = request.otherCosts().divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
-                    otherCosts = request.sellingPrice().multiply(otherCostsPercentage);
+                    otherCosts = CalculationUtil.calculatePercentage(request.sellingPrice(), request.otherCosts());
                 } else {
                     otherCosts = request.otherCosts();
                 }
             }
             
-            BigDecimal totalFeesJanSep = fbaFee.add(referralFee).add(storageFeeJanSep).add(unitFreightCost).add(otherCosts);
-            BigDecimal totalFeesOctDec = fbaFee.add(referralFee).add(storageFeeOctDec).add(unitFreightCost).add(otherCosts);
+            BigDecimal totalFeesJanSep = CalculationUtil.safeAdd(fbaFee, referralFee);
+            totalFeesJanSep = CalculationUtil.safeAdd(totalFeesJanSep, storageFeeJanSep);
+            totalFeesJanSep = CalculationUtil.safeAdd(totalFeesJanSep, unitFreightCost);
+            totalFeesJanSep = CalculationUtil.safeAdd(totalFeesJanSep, otherCosts);
             
-            BigDecimal cost = request.cost() != null ? request.cost() : BigDecimal.ZERO;
-            BigDecimal netProfitJanSep = request.sellingPrice().subtract(cost).subtract(totalFeesJanSep);
-            BigDecimal netProfitOctDec = request.sellingPrice().subtract(cost).subtract(totalFeesOctDec);
+            BigDecimal totalFeesOctDec = CalculationUtil.safeAdd(fbaFee, referralFee);
+            totalFeesOctDec = CalculationUtil.safeAdd(totalFeesOctDec, storageFeeOctDec);
+            totalFeesOctDec = CalculationUtil.safeAdd(totalFeesOctDec, unitFreightCost);
+            totalFeesOctDec = CalculationUtil.safeAdd(totalFeesOctDec, otherCosts);
             
-            BigDecimal profitMarginJanSep = feeCalculatorService.calculateProfitMargin(
-                    request.sellingPrice(),
-                    netProfitJanSep
-            );
-            BigDecimal profitMarginOctDec = feeCalculatorService.calculateProfitMargin(
-                    request.sellingPrice(),
-                    netProfitOctDec
-            );
+            BigDecimal netProfitJanSep = CalculationUtil.calculateNetProfit(request.sellingPrice(), totalFeesJanSep);
+            BigDecimal netProfitOctDec = CalculationUtil.calculateNetProfit(request.sellingPrice(), totalFeesOctDec);
+            
+            BigDecimal profitMarginJanSep = CalculationUtil.calculateProfitMargin(netProfitJanSep, request.sellingPrice());
+            BigDecimal profitMarginOctDec = CalculationUtil.calculateProfitMargin(netProfitOctDec, request.sellingPrice());
+            if (profitMarginJanSep == null) profitMarginJanSep = BigDecimal.ZERO;
+            if (profitMarginOctDec == null) profitMarginOctDec = BigDecimal.ZERO;
             
             BigDecimal roiJanSep = BigDecimal.ZERO;
             BigDecimal roiOctDec = BigDecimal.ZERO;
-            if (cost.compareTo(BigDecimal.ZERO) > 0) {
-                roiJanSep = feeCalculatorService.calculateROI(cost, netProfitJanSep);
-                roiOctDec = feeCalculatorService.calculateROI(cost, netProfitOctDec);
+            if (otherCosts != null && otherCosts.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal calculatedRoiJanSep = CalculationUtil.calculateROI(netProfitJanSep, otherCosts);
+                BigDecimal calculatedRoiOctDec = CalculationUtil.calculateROI(netProfitOctDec, otherCosts);
+                roiJanSep = calculatedRoiJanSep != null ? calculatedRoiJanSep : BigDecimal.ZERO;
+                roiOctDec = calculatedRoiOctDec != null ? calculatedRoiOctDec : BigDecimal.ZERO;
             }
             
-            Map<String, Object> response = new java.util.HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("sizeTier", sizeTier);
             response.put("fbaFulfillmentFee", fbaFee);
             response.put("referralFee", referralFee);
@@ -121,7 +132,6 @@ public class FeeCalculatorController {
             response.put("roiJanSep", roiJanSep);
             response.put("roiOctDec", roiOctDec);
             response.put("sellingPrice", request.sellingPrice());
-            response.put("cost", request.cost());
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -135,11 +145,8 @@ public class FeeCalculatorController {
             BigDecimal width,
             BigDecimal height,
             BigDecimal weight,
-            BigDecimal outboundShippingWeight,
             String category,
             BigDecimal sellingPrice,
-            BigDecimal cost,
-            BigDecimal targetROI,
             BigDecimal timeInStorage,
             BigDecimal freightCost,
             BigDecimal freightCostUnit,

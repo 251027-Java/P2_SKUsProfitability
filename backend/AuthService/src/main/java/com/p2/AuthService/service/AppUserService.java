@@ -1,10 +1,10 @@
-package com.project2.SKUProfitability.Service;
+package com.p2.AuthService.service;
 
-import com.project2.SKUProfitability.DTO.AppUserDTO;
-import com.project2.SKUProfitability.DTO.RegisterCustomerDTO;
-import com.project2.SKUProfitability.Model.AppUser;
-import com.project2.SKUProfitability.Repository.AppUserRepository;
-import com.project2.SKUProfitability.Util.ValidationUtil;
+import com.p2.AuthService.dto.AppUserDTO;
+import com.p2.AuthService.dto.RegisterCustomerDTO;
+import com.p2.AuthService.model.AppUser;
+import com.p2.AuthService.repository.AppUserRepository;
+import com.p2.AuthService.util.ValidationUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

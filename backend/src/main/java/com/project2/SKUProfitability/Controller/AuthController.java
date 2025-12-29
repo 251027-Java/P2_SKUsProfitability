@@ -1,79 +1,48 @@
 package com.project2.SKUProfitability.Controller;
 
-import com.project2.SKUProfitability.DTO.AppUserDTO;
-import com.project2.SKUProfitability.DTO.RegisterCustomerDTO;
-import com.project2.SKUProfitability.JwtUtil;
-import com.project2.SKUProfitability.Model.AppUser;
-import com.project2.SKUProfitability.Repository.AppUserRepository;
-import com.project2.SKUProfitability.Service.AppUserService;
+import com.project2.SKUProfitability.Client.AuthServiceClient;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
     public record AuthRequest(String email, String password){}
-    public record AuthResponse(String token){}
+    public record RegisterRequest(String email, String password, String firstName, String lastName){}
 
-    private final AppUserRepository appUserRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final AppUserService appUserService;
+    private final AuthServiceClient authServiceClient;
 
-    public AuthController(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, AppUserService appUserService) {
-        this.appUserRepository = appUserRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.appUserService = appUserService;
+    public AuthController(AuthServiceClient authServiceClient) {
+        this.authServiceClient = authServiceClient;
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody AuthRequest request) {
-        Optional<AppUser> optionalUser = appUserRepository.findByEmail(request.email);
-        if(optionalUser.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    public AuthServiceClient.AuthResponse login(@RequestBody AuthRequest request) {
+        try {
+            return authServiceClient.login(request.email(), request.password());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login failed: " + e.getMessage());
         }
-
-        AppUser user = optionalUser.get();
-        Long userId = user.getUserId();
-
-        if(!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
-        }
-
-        String token = jwtUtil.generateToken(
-                userId,
-                user.getEmail(),
-                user.getUserRole()
-        );
-
-        return new AuthResponse(token);
     }
 
     @PostMapping("/register")
-    public AuthResponse register(@RequestBody RegisterCustomerDTO request) {
+    public AuthServiceClient.AuthResponse register(@RequestBody RegisterRequest request) {
         try {
-            AppUserDTO user = appUserService.registerNewCustomer(request);
-            Long userId = user.userId();
-
-            String token = jwtUtil.generateToken(
-                    userId,
+            return authServiceClient.register(
                     request.email(),
-                    "SELLER"
+                    request.password(),
+                    request.firstName(),
+                    request.lastName()
             );
-
-            return new AuthResponse(token);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Registration failed: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Registration failed: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/health")
+    public String health() {
+        boolean authServiceHealthy = authServiceClient.isServiceHealthy();
+        return "Auth Service: " + (authServiceHealthy ? "UP" : "DOWN");
     }
 }

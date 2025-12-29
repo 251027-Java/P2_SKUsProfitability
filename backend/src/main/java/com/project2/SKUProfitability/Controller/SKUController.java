@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,7 +64,7 @@ public class SKUController {
             HttpServletRequest request) {
         try {
             Long userId = getUserIdFromRequest(request);
-            Optional<SKUDTO> sku = skuService.searchBySkuOrAsin(userId, q);
+            Optional<SKUDTO> sku = skuService.searchBySku(userId, q);
             return sku.map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
@@ -83,43 +82,6 @@ public class SKUController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-    
-    @PostMapping("/bulk")
-    public ResponseEntity<Map<String, Object>> bulkCreateSKUs(
-            @RequestBody List<SKUCreateDTO> skus,
-            HttpServletRequest request) {
-        try {
-            Long userId = getUserIdFromRequest(request);
-            
-            if (skus == null || skus.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "SKUs list cannot be empty"));
-            }
-            
-            List<SKUDTO> createdSKUs = new ArrayList<>();
-            List<String> errors = new ArrayList<>();
-            
-            for (int i = 0; i < skus.size(); i++) {
-                try {
-                    SKUDTO created = skuService.createSKU(userId, skus.get(i));
-                    createdSKUs.add(created);
-                } catch (Exception e) {
-                    errors.add("SKU " + (i + 1) + " (" + skus.get(i).sku() + "): " + e.getMessage());
-                }
-            }
-            
-            return ResponseEntity.ok(Map.of(
-                    "message", "Processed " + skus.size() + " SKU(s)",
-                    "created", createdSKUs.size(),
-                    "failed", errors.size(),
-                    "skus", createdSKUs,
-                    "errors", errors
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
         }
     }
     
@@ -151,22 +113,6 @@ public class SKUController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
-        }
-    }
-    
-    @PutMapping("/{skuId}")
-    public ResponseEntity<SKUDTO> updateSKU(
-            @PathVariable Long skuId,
-            @RequestBody SKUCreateDTO dto,
-            HttpServletRequest request) {
-        try {
-            Long userId = getUserIdFromRequest(request);
-            SKUDTO updatedSKU = skuService.updateSKU(skuId, userId, dto);
-            return ResponseEntity.ok(updatedSKU);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
     

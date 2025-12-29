@@ -34,7 +34,6 @@ public class SKUProfitabilityApplication {
                         "User"
                 );
                 appUserRepository.save(adminUser);
-                System.out.println("Created Admin Profile");
             }
 
             if (appUserRepository.findByEmail("test@skuprofitability.com").isEmpty()) {
@@ -47,7 +46,6 @@ public class SKUProfitabilityApplication {
                         "User"
                 );
                 appUserRepository.save(testSeller);
-                System.out.println("Created Test Seller Profile");
             }
         };
     }

@@ -2,12 +2,68 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="description" content="Amazon SKU Profitability Calculator - Calculate FBA fees, referral fees, and profitability metrics for your Amazon products" />
+    <meta name="keywords" content="Amazon, FBA, SKU, Profitability, Calculator, Fees, Amazon Seller" />
+    <meta name="author" content="Amazon SKU Profitability Calculator" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Amazon SKU Profitability Calculator</title>
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- No-JS fallback styles -->
+    <noscript>
+      <style>
+        body {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          text-align: center;
+          padding: 2rem;
+        }
+        .no-js-message {
+          max-width: 600px;
+        }
+        .no-js-message h1 {
+          font-size: 2rem;
+          margin-bottom: 1rem;
+        }
+        .no-js-message p {
+          font-size: 1.1rem;
+          line-height: 1.6;
+        }
+      </style>
+    </noscript>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- No-JS fallback message -->
+    <noscript>
+      <div class="no-js-message">
+        <h1>JavaScript Required</h1>
+        <p>This application requires JavaScript to be enabled in your browser. Please enable JavaScript and refresh the page.</p>
+      </div>
+    </noscript>
+    <!-- React root element -->
+    <div id="root">
+      <!-- Loading fallback -->
+      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div style="text-align: center; color: white;">
+          <div style="border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+          <p>Loading Amazon SKU Profitability Calculator...</p>
+        </div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    </div>
+    <!-- Main application script -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

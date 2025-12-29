@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import SKUDetailPage from './pages/SKUDetailPage';
 import { isAuthenticated } from './services/AuthService';
 
 function ProtectedRoute({ children }) {
@@ -16,10 +17,10 @@ function ProtectedRoute({ children }) {
 
     if (!authChecked) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
                 <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                    <p className="mt-4 text-gray-600">Loading...</p>
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+                    <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
                 </div>
             </div>
         );
@@ -31,7 +32,7 @@ function ProtectedRoute({ children }) {
 function App() {
     return (
         <Router>
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 transition-colors duration-200">
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
                     <Route 
@@ -46,12 +47,12 @@ function App() {
                         } 
                     />
                     <Route 
-                        path="/api" 
+                        path="/sku/:skuId" 
                         element={
                             <ProtectedRoute>
                                 <>
                                     <Navbar />
-                                    <HomePage />
+                                    <SKUDetailPage />
                                 </>
                             </ProtectedRoute>
                         } 

@@ -7,18 +7,25 @@ RUN mvn dependency:go-offline -B
 
 COPY src ./src
 
-# Build the application
 RUN mvn clean package -DskipTests
 
-# Runtime stage
+RUN ls -la /app/target/*.jar
+
 FROM eclipse-temurin:21-jre-alpine
+
+RUN apk add --no-cache wget
 
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
 EXPOSE 8080
 
-# Run the application
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
 

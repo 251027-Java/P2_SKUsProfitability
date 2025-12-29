@@ -4,16 +4,14 @@ import { searchSKU } from '../services/SKUService';
 function SKUForm({ onSave, onCancel, initialData = null }) {
     const [formData, setFormData] = useState({
         sku: initialData?.sku || '',
-        asin: initialData?.asin || '',
         productName: initialData?.productName || '',
+        description: initialData?.description || '',
         length: initialData?.length || '',
         width: initialData?.width || '',
         height: initialData?.height || '',
         weight: initialData?.weight || '',
         category: initialData?.category || '',
         sellingPrice: initialData?.sellingPrice || '',
-        cost: initialData?.cost || '',
-        targetROI: initialData?.targetROI || '',
     });
 
     const [errors, setErrors] = useState({});
@@ -37,7 +35,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
 
     const handleSearch = async () => {
         if (!searchTerm.trim()) {
-            setSearchError('Please enter a SKU or ASIN to search');
+            setSearchError('Please enter a SKU to search');
             return;
         }
 
@@ -49,21 +47,19 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
             if (foundSKU) {
                 setFormData({
                     sku: foundSKU.sku || '',
-                    asin: foundSKU.asin || '',
                     productName: foundSKU.productName || '',
+                    description: foundSKU.description || '',
                     length: foundSKU.length || '',
                     width: foundSKU.width || '',
                     height: foundSKU.height || '',
                     weight: foundSKU.weight || '',
                     category: foundSKU.category || '',
                     sellingPrice: foundSKU.sellingPrice || '',
-                    cost: foundSKU.cost || '',
-                    targetROI: foundSKU.targetROI || '',
                 });
                 setSearchTerm('');
                 setSearchError('');
             } else {
-                setSearchError('Product not found. Please check the SKU or ASIN.');
+                setSearchError('Product not found. Please check the SKU.');
             }
         } catch (err) {
             setSearchError('Failed to search. Please try again.');
@@ -83,18 +79,15 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
         const newErrors = {};
         
         if (!formData.sku.trim()) newErrors.sku = 'SKU is required';
+        if (!formData.productName.trim()) newErrors.productName = 'Product Name is required';
+        if (!formData.description.trim()) newErrors.description = 'Description is required';
+        if (!formData.category.trim()) newErrors.category = 'Category is required';
         if (!formData.length || formData.length <= 0) newErrors.length = 'Length is required';
         if (!formData.width || formData.width <= 0) newErrors.width = 'Width is required';
         if (!formData.height || formData.height <= 0) newErrors.height = 'Height is required';
         if (!formData.weight || formData.weight <= 0) newErrors.weight = 'Weight is required';
         if (!formData.sellingPrice || formData.sellingPrice <= 0) newErrors.sellingPrice = 'Selling price is required';
         
-        if (!formData.cost && !formData.targetROI) {
-            newErrors.cost = 'Either Cost or Target ROI is required';
-            newErrors.targetROI = 'Either Cost or Target ROI is required';
-        }
-        if (formData.cost && formData.cost < 0) newErrors.cost = 'Cost cannot be negative';
-        if (formData.targetROI && formData.targetROI <= 0) newErrors.targetROI = 'Target ROI must be greater than 0';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -111,8 +104,6 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
             height: parseFloat(formData.height),
             weight: parseFloat(formData.weight),
             sellingPrice: parseFloat(formData.sellingPrice),
-            cost: formData.cost ? parseFloat(formData.cost) : null,
-            targetROI: formData.targetROI ? parseFloat(formData.targetROI) : null,
         };
 
         onSave(submitData);
@@ -120,9 +111,9 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-200">
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Search by SKU or ASIN
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-5 border border-blue-200 dark:border-blue-800 transition-colors duration-200">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-3">
+                    Search by SKU
                 </label>
                 <div className="flex gap-3">
                     <input
@@ -130,8 +121,8 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyPress={handleSearchKeyPress}
-                        placeholder="Enter SKU or ASIN to auto-fill fields..."
-                        className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        placeholder="Enter SKU to auto-fill fields..."
+                        className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors duration-200"
                     />
                     <button
                         type="button"
@@ -158,61 +149,67 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                     </button>
                 </div>
                 {searchError && (
-                    <p className="text-red-600 text-sm mt-2 font-medium">{searchError}</p>
+                    <p className="text-red-600 dark:text-red-400 text-sm mt-2 font-medium">{searchError}</p>
                 )}
-                <p className="text-xs text-gray-600 mt-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400 dark:text-gray-400 mt-2">
                     Search your saved products to auto-fill all fields
                 </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        SKU <span className="text-red-500">*</span>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-2">
+                        SKU <span className="text-red-500 dark:text-red-400">*</span>
                     </label>
                     <input
                         type="text"
                         name="sku"
                         value={formData.sku}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white ${
-                            errors.sku ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-white transition-colors duration-200 ${
+                            errors.sku ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600 dark:border-gray-600'
                         }`}
                         placeholder="ABC-123"
                     />
-                    {errors.sku && <p className="text-red-600 text-sm mt-1 font-medium">{errors.sku}</p>}
-                </div>
-
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        ASIN
-                    </label>
-                    <input
-                        type="text"
-                        name="asin"
-                        value={formData.asin}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                        placeholder="B08XYZ1234"
-                    />
+                    {errors.sku && <p className="text-red-600 dark:text-red-400 text-sm mt-1 font-medium">{errors.sku}</p>}
                 </div>
 
                 <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Product Name
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Product Name <span className="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
                         name="productName"
                         value={formData.productName}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 ${
+                            errors.productName ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                        }`}
                         placeholder="Widget Pro"
                     />
+                    {errors.productName && <p className="text-red-600 text-sm mt-1 font-medium">{errors.productName}</p>}
+                </div>
+
+                <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Description <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        rows="3"
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 ${
+                            errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                        }`}
+                        placeholder="Product description..."
+                    />
+                    {errors.description && <p className="text-red-600 text-sm mt-1 font-medium">{errors.description}</p>}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Length (inches) <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -221,8 +218,8 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                         name="length"
                         value={formData.length}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white ${
-                            errors.length ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 ${
+                            errors.length ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                         }`}
                         placeholder="10.5"
                     />
@@ -230,7 +227,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Width (inches) <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -239,8 +236,8 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                         name="width"
                         value={formData.width}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white ${
-                            errors.width ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 ${
+                            errors.width ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                         }`}
                         placeholder="8.0"
                     />
@@ -248,7 +245,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Height (inches) <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -257,8 +254,8 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                         name="height"
                         value={formData.height}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white ${
-                            errors.height ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 ${
+                            errors.height ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                         }`}
                         placeholder="2.5"
                     />
@@ -266,7 +263,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Weight (pounds) <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -275,8 +272,8 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                         name="weight"
                         value={formData.weight}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white ${
-                            errors.weight ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 ${
+                            errors.weight ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                         }`}
                         placeholder="1.2"
                     />
@@ -284,21 +281,24 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Category
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Category <span className="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
                         name="category"
                         value={formData.category}
                         onChange={handleChange}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 ${
+                            errors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                        }`}
                         placeholder="Electronics"
                     />
+                    {errors.category && <p className="text-red-600 text-sm mt-1 font-medium">{errors.category}</p>}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Selling Price ($) <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -307,58 +307,14 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                         name="sellingPrice"
                         value={formData.sellingPrice}
                         onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white ${
-                            errors.sellingPrice ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 ${
+                            errors.sellingPrice ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                         }`}
                         placeholder="29.99"
                     />
                     {errors.sellingPrice && <p className="text-red-600 text-sm mt-1 font-medium">{errors.sellingPrice}</p>}
                 </div>
 
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Cost ($) <span className="text-gray-500 text-xs">(optional)</span>
-                    </label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        name="cost"
-                        value={formData.cost}
-                        onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white ${
-                            errors.cost ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="15.00"
-                    />
-                    {errors.cost && <p className="text-red-600 text-sm mt-1 font-medium">{errors.cost}</p>}
-                    <p className="text-xs text-gray-500 mt-1">If provided, calculates actual ROI</p>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Target ROI (%) <span className="text-gray-500 text-xs">(optional)</span>
-                    </label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        name="targetROI"
-                        value={formData.targetROI}
-                        onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white ${
-                            errors.targetROI ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="30.00"
-                    />
-                    {errors.targetROI && <p className="text-red-600 text-sm mt-1 font-medium">{errors.targetROI}</p>}
-                    <p className="text-xs text-gray-500 mt-1">If provided, calculates max purchase cost</p>
-                </div>
-            </div>
-
-            <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-4">
-                <p className="text-sm text-blue-800 font-medium">
-                    Provide either Cost (to see actual ROI) or Target ROI (to see max purchase cost). 
-                    You can provide both to see both calculations.
-                </p>
             </div>
 
             <div className="flex gap-4 pt-2">
@@ -375,7 +331,7 @@ function SKUForm({ onSave, onCancel, initialData = null }) {
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                        className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 transition-colors duration-200"
                     >
                         Cancel
                     </button>

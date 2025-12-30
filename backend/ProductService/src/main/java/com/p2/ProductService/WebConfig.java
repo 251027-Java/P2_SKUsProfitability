@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/skus",
                         "/api/lists",
                         "/api/skus/**",
-                        "/api/skus/**"
+                        "/api/list/**"
                 );
     }
 

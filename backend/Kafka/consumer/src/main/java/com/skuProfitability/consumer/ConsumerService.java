@@ -1,3 +1,5 @@
-package com.skuProfitability.consumer;public class ConsumerService {
+package com.skuProfitability.consumer;
+
+public class ConsumerService {
 
 }

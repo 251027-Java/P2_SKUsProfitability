@@ -1,6 +1,6 @@
-package com.p2.ProductService.Repository;
+package com.p2.product_service.repository;
 
-import com.p2.ProductService.Model.SellerListItem;
+import com.p2.product_service.model.SellerListItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,8 +1,8 @@
-package com.p2.ProductService.Controller;
+package com.p2.product_service.controller;
 
-import com.p2.ProductService.DTO.SKUCreateDTO;
-import com.p2.ProductService.DTO.SKUDTO;
-import com.p2.ProductService.Service.SKUService;
+import com.p2.product_service.dto.SKUCreateDTO;
+import com.p2.product_service.dto.SKUDTO;
+import com.p2.product_service.service.SKUService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

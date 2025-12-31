@@ -1,4 +1,4 @@
-package com.p2.ProductService.DTO;
+package com.p2.product_service.dto;
 
 public record SellerListCreateDTO(
         String name,

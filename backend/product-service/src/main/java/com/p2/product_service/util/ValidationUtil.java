@@ -1,4 +1,4 @@
-package com.p2.ProductService.Util;
+package com.p2.product_service.util;
 
 import java.math.BigDecimal;
 import java.util.regex.Pattern;

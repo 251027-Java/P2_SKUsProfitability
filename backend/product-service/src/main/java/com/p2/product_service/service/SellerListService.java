@@ -1,17 +1,17 @@
-package com.p2.ProductService.Service;
+package com.p2.product_service.service;
 
-import com.p2.ProductService.DTO.SKUDTO;
-import com.p2.ProductService.DTO.SellerListCreateDTO;
-import com.p2.ProductService.DTO.SellerListDTO;
-import com.p2.ProductService.Exception.ResourceNotFoundException;
-import com.p2.ProductService.Model.SKU;
-import com.p2.ProductService.Model.SellerList;
-import com.p2.ProductService.Model.SellerListItem;
-import com.p2.ProductService.Repository.SKURepository;
-import com.p2.ProductService.Repository.SellerListItemRepository;
-import com.p2.ProductService.Repository.SellerListRepository;
-import com.p2.ProductService.Util.DataTransformUtil;
-import com.p2.ProductService.Util.ValidationUtil;
+import com.p2.product_service.dto.SKUDTO;
+import com.p2.product_service.dto.SellerListCreateDTO;
+import com.p2.product_service.dto.SellerListDTO;
+import com.p2.product_service.exception.ResourceNotFoundException;
+import com.p2.product_service.model.SKU;
+import com.p2.product_service.model.SellerList;
+import com.p2.product_service.model.SellerListItem;
+import com.p2.product_service.repository.SKURepository;
+import com.p2.product_service.repository.SellerListItemRepository;
+import com.p2.product_service.repository.SellerListRepository;
+import com.p2.product_service.util.DataTransformUtil;
+import com.p2.product_service.util.ValidationUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,12 +42,12 @@ public class SellerListService {
             throw new IllegalArgumentException("List with this name already exists");
         }
 
-        com.p2.ProductService.Model.SellerList list = new com.p2.ProductService.Model.SellerList(
+        com.p2.product_service.model.SellerList list = new com.p2.product_service.model.SellerList(
                 userId,
                 DataTransformUtil.normalizeString(dto.name()),
                 dto.description() != null ? DataTransformUtil.normalizeString(dto.description()) : null
         );
-        com.p2.ProductService.Model.SellerList savedList = listRepository.save(list);
+        com.p2.product_service.model.SellerList savedList = listRepository.save(list);
         return convertToDTO(savedList);
     }
 
@@ -69,7 +69,7 @@ public class SellerListService {
             throw new IllegalArgumentException("List name must be 200 characters or less");
         }
 
-        com.p2.ProductService.Model.SellerList list = listRepository.findById(listId)
+        com.p2.product_service.model.SellerList list = listRepository.findById(listId)
                 .filter(l -> l.getUserId().equals(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("List", listId));
 
@@ -79,12 +79,12 @@ public class SellerListService {
 
         list.setName(DataTransformUtil.normalizeString(dto.name()));
         list.setDescription(dto.description() != null ? DataTransformUtil.normalizeString(dto.description()) : null);
-        com.p2.ProductService.Model.SellerList updatedList = listRepository.save(list);
+        com.p2.product_service.model.SellerList updatedList = listRepository.save(list);
         return convertToDTO(updatedList);
     }
 
     public void deleteList(Long listId, Long userId) {
-        com.p2.ProductService.Model.SellerList list = listRepository.findById(listId)
+        com.p2.product_service.model.SellerList list = listRepository.findById(listId)
                 .filter(l -> l.getUserId().equals(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("List", listId));
         listRepository.delete(list);
@@ -109,7 +109,7 @@ public class SellerListService {
     }
 
     public SellerListDTO removeSKUFromList(Long listId, Long skuId, Long userId) {
-        com.p2.ProductService.Model.SellerList list = listRepository.findById(listId)
+        com.p2.product_service.model.SellerList list = listRepository.findById(listId)
                 .filter(l -> l.getUserId().equals(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("List", listId));
 
@@ -117,7 +117,7 @@ public class SellerListService {
         return convertToDTO(list);
     }
 
-    private SellerListDTO convertToDTO(com.p2.ProductService.Model.SellerList list) {
+    private SellerListDTO convertToDTO(com.p2.product_service.model.SellerList list) {
         List<SellerListItem> items = listItemRepository.findBySellerList_ListId(list.getListId());
         List<SKUDTO> skuDTOs = items.stream()
                 .map(item -> DataTransformUtil.toSKUDTO(item.getSku()))

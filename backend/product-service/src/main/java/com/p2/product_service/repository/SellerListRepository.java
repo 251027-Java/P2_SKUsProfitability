@@ -1,6 +1,6 @@
-package com.p2.ProductService.Repository;
+package com.p2.product_service.repository;
 
-import com.p2.ProductService.Model.SellerList;
+import com.p2.product_service.model.SellerList;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SellerListRepository extends JpaRepository<SellerList, Long> {

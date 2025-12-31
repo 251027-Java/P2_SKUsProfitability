@@ -1,11 +1,10 @@
-package com.p2.ProductService.Model;
+package com.p2.product_service.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "seller_list_items")

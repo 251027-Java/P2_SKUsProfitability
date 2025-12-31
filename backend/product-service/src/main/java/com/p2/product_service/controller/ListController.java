@@ -1,15 +1,14 @@
-package com.p2.ProductService.Controller;
+package com.p2.product_service.controller;
 
-import com.p2.ProductService.DTO.SellerListCreateDTO;
-import com.p2.ProductService.DTO.SellerListDTO;
-import com.p2.ProductService.Service.SellerListService;
+import com.p2.product_service.dto.SellerListCreateDTO;
+import com.p2.product_service.dto.SellerListDTO;
+import com.p2.product_service.service.SellerListService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/lists")

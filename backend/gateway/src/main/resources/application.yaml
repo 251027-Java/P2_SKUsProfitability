@@ -18,8 +18,8 @@ spring:
               filters:
                 - StripPrefix=1            # Remove /myclient prefix before forwarding
 
-            - id: productclient-route
-              uri: lb://PRODUCT-CLIENT
+            - id: productservice-route
+              uri: lb://PRODUCT-SERVICE
               predicates:
                 - Path=/product/**          # Match all paths starting with /myclient/
               filters:

@@ -1,6 +1,6 @@
-package com.p2.ProductService.Service;
+package com.p2.product_service.service;
 
-import com.p2.ProductService.Util.CalculationUtil;
+import com.p2.product_service.util.CalculationUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

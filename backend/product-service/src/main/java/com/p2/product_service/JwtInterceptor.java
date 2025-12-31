@@ -1,6 +1,6 @@
-package com.p2.ProductService;
+package com.p2.product_service;
 
-import com.p2.ProductService.JwtUtil;
+import com.p2.product_service.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -18,9 +18,10 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestUri = request.getRequestURI();
 
-        if (requestUri.equals("/api/sku") ||
-                requestUri.equals("/api/list") ||
-                requestUri.startsWith("/api/calculator/")) {
+        if (requestUri.equals("/api/skus") ||
+                requestUri.equals("/api/lists") ||
+                requestUri.startsWith("/api/skus/") ||
+                requestUri.startsWith("/api/lists/")) {
             return true;
         }
 

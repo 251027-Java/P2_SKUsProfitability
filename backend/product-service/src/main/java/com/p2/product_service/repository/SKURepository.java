@@ -1,10 +1,9 @@
-package com.p2.ProductService.Repository;
+package com.p2.product_service.repository;
 
-import com.p2.ProductService.Model.SKU;
+import com.p2.product_service.model.SKU;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository

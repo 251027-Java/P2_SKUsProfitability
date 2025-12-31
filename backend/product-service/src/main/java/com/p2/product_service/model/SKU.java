@@ -1,4 +1,4 @@
-package com.p2.ProductService.Model;
+package com.p2.product_service.model;
 
 import jakarta.persistence.*;
 import lombok.Data;

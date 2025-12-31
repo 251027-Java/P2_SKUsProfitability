@@ -1,4 +1,4 @@
-package com.p2.calculator_service.controller;
+package com.p2.product_service.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +10,7 @@ public class MyController {
 
     @GetMapping // This handles the GET request to /hello
     public String hello() {
-        return "Hello from Eureka Calculator Service";
+        return "Hello from Eureka Product Service";
     }
 }
 

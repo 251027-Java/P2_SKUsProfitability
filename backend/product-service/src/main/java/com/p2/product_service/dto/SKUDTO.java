@@ -1,4 +1,4 @@
-package com.p2.ProductService.DTO;
+package com.p2.product_service.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

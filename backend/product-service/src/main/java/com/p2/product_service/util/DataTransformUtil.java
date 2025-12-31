@@ -1,7 +1,7 @@
-package com.p2.ProductService.Util;
+package com.p2.product_service.util;
 
-import com.p2.ProductService.DTO.SKUDTO;
-import com.p2.ProductService.Model.SKU;
+import com.p2.product_service.dto.SKUDTO;
+import com.p2.product_service.model.SKU;
 
 import java.math.BigDecimal;
 import java.util.List;

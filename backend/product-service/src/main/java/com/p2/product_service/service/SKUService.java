@@ -1,19 +1,19 @@
-package com.p2.ProductService.Service;
+package com.p2.product_service.service;
 
 
-import com.p2.ProductService.DTO.SKUCreateDTO;
-import com.p2.ProductService.DTO.SKUDTO;
-import com.p2.ProductService.Exception.ResourceNotFoundException;
-import com.p2.ProductService.Model.SKU;
-import com.p2.ProductService.Repository.SKURepository;
-import com.p2.ProductService.Util.DataTransformUtil;
+import com.p2.product_service.dto.SKUCreateDTO;
+import com.p2.product_service.dto.SKUDTO;
+import com.p2.product_service.exception.ResourceNotFoundException;
+import com.p2.product_service.model.SKU;
+import com.p2.product_service.repository.SKURepository;
+import com.p2.product_service.util.DataTransformUtil;
+import com.p2.product_service.util.ValidationUtil;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.p2.ProductService.Util.ValidationUtil;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

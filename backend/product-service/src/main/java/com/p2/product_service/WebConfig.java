@@ -1,4 +1,4 @@
-package com.p2.ProductService;
+package com.p2.product_service;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -16,13 +16,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
-                .addPathPatterns("/api/**")
-                .excludePathPatterns(
-                        "/api/skus",
-                        "/api/lists",
-                        "/api/skus/**",
-                        "/api/lists/**"
-                );
+                // Catch only the private data paths
+                .addPathPatterns("/api/skus/**")
+                .addPathPatterns("/api/lists/**")
+
+                // Allow the hello path to bypass the interceptor entirely
+                .excludePathPatterns("/hello","/hello/**");
     }
 
     @Override

@@ -25,8 +25,8 @@ spring:
               filters:
                 - StripPrefix=1
 
-            - id: calculationclient-route
-              uri: lb://CALCULATION-CLIENT
+            - id: calculatorservice-route
+              uri: lb://CALCULATOR-SERVICE
               predicates:
                 - Path=/calculation/**          # Match all paths starting with /myclient/
               filters:

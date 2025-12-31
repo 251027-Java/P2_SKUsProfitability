@@ -17,9 +17,6 @@ public class SKU {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long skuId;
 
-//    @Column(nullable = false)
-//    private Long userId;
-
     @Column(nullable = false, unique = true, length = 50)
     private String sku;
 
@@ -96,5 +93,3 @@ public class SKU {
         this.sellingPrice = sellingPrice;
     }
 }
-
-

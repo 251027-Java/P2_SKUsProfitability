@@ -22,29 +22,13 @@ public class SKUController {
         this.skuService = skuService;
     }
 
-    // --- Security Helpers ---
-
-//    private Long getUserId(HttpServletRequest request) {
-//        return (Long) request.getAttribute("userId");
-//    }
-//
-//    private boolean isAdmin(HttpServletRequest request) {
-//        String role = (String) request.getAttribute("userRole");
-//        return "ADMIN".equalsIgnoreCase(role);
-//    }
-
-    // Testing
     private Long getUserId(HttpServletRequest request) {
-        // Hardcode to 1L so the controller thinks a user is logged in
         return 1L;
     }
 
     private boolean isAdmin(HttpServletRequest request) {
-        // Always act like an admin for now
         return true;
     }
-
-    // --- Public/Shared Endpoints (Requires valid login, any role) ---
 
     @GetMapping
     public ResponseEntity<List<SKUDTO>> getAllSKUs(HttpServletRequest request) {
@@ -71,8 +55,6 @@ public class SKUController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    // --- Administrative Endpoints (Strictly ADMIN only) ---
 
     @PostMapping
     public ResponseEntity<SKUDTO> createSKU(@RequestBody SKUCreateDTO dto, HttpServletRequest request) {

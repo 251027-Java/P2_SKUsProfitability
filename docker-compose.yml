@@ -21,10 +21,9 @@ services:
     networks:
       - sku-network
 
-  # CalculatorService Microservice - handles fee calculations and stores calculation history
   calculator-service:
     build:
-      context: ./backend/CalculatorService
+      context: ./backend/calculator-service
       dockerfile: Dockerfile
     container_name: sku-calculator-service
     environment:
@@ -46,10 +45,9 @@ services:
       retries: 3
       start_period: 40s
 
-  # AuthService Microservice - handles authentication and user management
   auth-service:
     build:
-      context: ./backend/AuthService
+      context: ./backend/auth-service
       dockerfile: Dockerfile
     container_name: sku-auth-service
     environment:
@@ -72,7 +70,6 @@ services:
       retries: 3
       start_period: 40s
 
-  # Main Backend Service - delegates calculator operations to calculator-service
   backend:
     build:
       context: ./backend
@@ -84,7 +81,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: mysecretpassword
       JWT_SECRET: QzXgN8yJpY4rL2sF5vW0hT1bA7eC9uD3kH6mZpXqYwS0jL9kVyN8tR7eF6dG5hA9bC8dE7fG6hI5jK4lM3nO2pQ1rS0tU9vW8xY7zZ6yA5bX4cW3vU2tS1rQ0pOnM9lK8jI7hG6fE5dC4bA3zY2xW1vU0tS9rQ8pOn
       SPRING_PROFILES_ACTIVE: docker
-      # Inter-service communication - points to calculator-service and auth-service
       CALCULATOR_SERVICE_URL: http://calculator-service:8081
       AUTH_SERVICE_URL: http://auth-service:8082
     ports:

@@ -1,27 +1,25 @@
-# Build stage
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
 COPY pom.xml .
-COPY mvnw .
-COPY mvnw.cmd .
-COPY .mvn .mvn
 RUN mvn dependency:go-offline -B
 
-# Copy source code and build
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copy the built jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+RUN apk add --no-cache wget
 
-# Expose port
+COPY --from=build /app/target/AuthService-*.jar app.jar
+
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
 EXPOSE 8082
 
-# Run the application
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8082/api/auth/health || exit 1
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

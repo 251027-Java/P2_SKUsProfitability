@@ -1,3 +1,4 @@
+-- Active: 1767131972636@@127.0.0.1@5432@sku_profitability_db
 CREATE TABLE IF NOT EXISTS app_users (
     user_id BIGSERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,

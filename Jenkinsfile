@@ -21,7 +21,7 @@ pipeline {
         
         stage('Build') {
             steps {
-                dir('P2_SKUsProfitability') {
+                dir('backend') {
                     sh 'mvn test'
                 }
             }
@@ -29,7 +29,7 @@ pipeline {
         
         stage('Test') {
             steps {
-                dir('P2_SKUsProfitability') {
+                dir('backend') {
                     sh 'mvn test'
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
         
         stage('Package') {
             steps {
-                dir('P2_SKUsProfitability') {
+                dir('backend') {
                     sh 'mvn package -DskipTests'
                 }
             }

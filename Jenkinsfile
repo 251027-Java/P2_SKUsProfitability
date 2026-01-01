@@ -21,7 +21,7 @@ pipeline {
         
         stage('Build') {
             steps {
-                dir('backend') {
+                dir('ProductService') {
                     sh 'mvn test'
                 }
             }
@@ -29,7 +29,7 @@ pipeline {
         
         stage('Test') {
             steps {
-                dir('backend') {
+                dir('ProductService') {
                     sh 'mvn test'
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
         
         stage('Package') {
             steps {
-                dir('backend') {
+                dir('ProductService') {
                     sh 'mvn package -DskipTests'
                 }
             }

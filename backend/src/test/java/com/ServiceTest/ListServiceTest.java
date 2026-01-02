@@ -17,7 +17,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
-import java.util.List;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,7 +61,7 @@ public class ListServiceTest {
     @Test
     void testGetAllListsByUserId_Empty() {
         when(listRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
-        List<ListDTO> result = service.getAllListsByUserId(1L);
+        java.util.List<ListDTO> result = service.getAllListsByUserId(1L);
         assertTrue(result.isEmpty());
     }
 

@@ -58,14 +58,14 @@ public class SKUServiceTest {
     @Test
     void testGetAllSKUs_Empty() {
         when(skuRepository.findAll()).thenReturn(Collections.emptyList());
-        List<SKUDTO> result = service.getAllSKUs();
+        List<SKUDTO> result = service.getAllSKUsByUserId(null);
         assertTrue(result.isEmpty());
     }
 
     @Test
     void testGetSKUById_NotFound() {
         when(skuRepository.findById(2L)).thenReturn(Optional.empty());
-        Optional<SKUDTO> result = service.getSKUById(2L);
+        Optional<SKUDTO> result = service.getSKUById(2L, null);
         assertTrue(result.isEmpty());
     }
 }

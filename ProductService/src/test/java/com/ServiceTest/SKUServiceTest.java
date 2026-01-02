@@ -59,7 +59,7 @@ public class SKUServiceTest {
     @Test
     void testGetAllSKUs_Empty() {
         when(skuRepository.findAll()).thenReturn(Collections.emptyList());
-        List<SKUDTO> result = service.getAllSKUs();
+        List<SKUDTO> result = service.getAllSKUsByUserId(null);
         assertTrue(result.isEmpty());
     }
 

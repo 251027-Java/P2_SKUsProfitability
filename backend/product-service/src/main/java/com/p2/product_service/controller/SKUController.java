@@ -17,9 +17,11 @@ import java.util.Map;
 public class SKUController {
 
     private final SKUService skuService;
+    private final com.p2.product_service.service.kafka.ProducerService producerService;
 
-    public SKUController(SKUService skuService) {
+    public SKUController(SKUService skuService, com.p2.product_service.service.kafka.ProducerService producerService) {
         this.skuService = skuService;
+        this.producerService = producerService;
     }
 
     private Long getUserId(HttpServletRequest request) {
@@ -32,7 +34,8 @@ public class SKUController {
 
     @GetMapping
     public ResponseEntity<List<SKUDTO>> getAllSKUs(HttpServletRequest request) {
-        if (getUserId(request) == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (getUserId(request) == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         List<SKUDTO> skus = skuService.getAllSKUs();
         return ResponseEntity.ok(skus);
@@ -40,7 +43,8 @@ public class SKUController {
 
     @GetMapping("/{skuId}")
     public ResponseEntity<SKUDTO> getSKU(@PathVariable Long skuId, HttpServletRequest request) {
-        if (getUserId(request) == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (getUserId(request) == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         return skuService.getSKUById(skuId)
                 .map(ResponseEntity::ok)
@@ -49,7 +53,8 @@ public class SKUController {
 
     @GetMapping("/search")
     public ResponseEntity<SKUDTO> searchSKU(@RequestParam String q, HttpServletRequest request) {
-        if (getUserId(request) == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (getUserId(request) == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         return skuService.searchBySku(q)
                 .map(ResponseEntity::ok)
@@ -58,7 +63,8 @@ public class SKUController {
 
     @PostMapping
     public ResponseEntity<SKUDTO> createSKU(@RequestBody SKUCreateDTO dto, HttpServletRequest request) {
-        if (!isAdmin(request)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!isAdmin(request))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         try {
             SKUDTO createdSKU = skuService.createSKU(dto);
@@ -86,10 +92,15 @@ public class SKUController {
 
         try {
             List<SKUDTO> importedSKUs = skuService.importFromCSV(getUserId(request), file);
+
+            // Trigger Kafka for each imported SKU
+            for (SKUDTO sku : importedSKUs) {
+                producerService.sendMessage("sku-updates", sku.sku());
+            }
+
             return ResponseEntity.ok(Map.of(
                     "message", "Successfully imported " + importedSKUs.size() + " SKUs",
-                    "skus", importedSKUs
-            ));
+                    "skus", importedSKUs));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
@@ -97,7 +108,8 @@ public class SKUController {
 
     @DeleteMapping("/{skuId}")
     public ResponseEntity<Void> deleteSKU(@PathVariable Long skuId, HttpServletRequest request) {
-        if (!isAdmin(request)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!isAdmin(request))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         try {
             skuService.deleteSKU(skuId);
@@ -107,5 +119,14 @@ public class SKUController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @PostMapping("/test-kafka")
+    public ResponseEntity<String> testKafka(@RequestParam String sku, HttpServletRequest request) {
+        if (!isAdmin(request))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        producerService.sendMessage("sku-updates", sku);
+        return ResponseEntity.ok("Sent Kafka message for SKU: " + sku);
     }
 }

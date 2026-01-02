@@ -3,6 +3,7 @@ pipeline {
     
     tools {
         jdk 'JDK21' 
+        maven 'maven'
     }
     
     stages {
@@ -19,7 +20,39 @@ pipeline {
             }
         }
         
-        stage('Build') {
+        stage('Build Backend') {
+            steps {
+                dir('backend') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+        
+        stage('Test Backend') {
+            steps {
+                dir('backend') {
+                    sh 'mvn test'
+                }
+            }
+        }
+        
+        stage('Package Backend') {
+            steps {
+                dir('backend') {
+                    sh 'mvn package -DskipTests'
+                }
+            }
+        }
+        
+        stage('Build ProductService') {
+            steps {
+                dir('ProductService') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+        
+        stage('Test ProductService') {
             steps {
                 dir('ProductService') {
                     sh 'mvn test'
@@ -27,21 +60,13 @@ pipeline {
             }
         }
         
-        stage('Test') {
-            steps {
-                dir('ProductService') {
-                    sh 'mvn test'
-                }
-            }
-        }
-        
-        stage('Package') {
+        stage('Package ProductService') {
             steps {
                 dir('ProductService') {
                     sh 'mvn package -DskipTests'
                 }
             }
-        }
+        } 
     }
     
     post {

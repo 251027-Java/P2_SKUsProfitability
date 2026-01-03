@@ -3,10 +3,11 @@ package com.p2.product_service.model.request;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
-public class ProductRequest {
-    private List<String> urls;
+public class ProductDetails {
+    private String url;
+    private String zipcode;
+    private String language;
+
 }

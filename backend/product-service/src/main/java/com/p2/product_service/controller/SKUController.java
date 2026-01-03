@@ -1,16 +1,15 @@
 package com.p2.product_service.controller;
 
-import com.p2.product_service.dto.SKUCreateDTO;
 import com.p2.product_service.dto.SKUDTO;
+import com.p2.product_service.model.SKU;
+import com.p2.product_service.model.request.DataBrightRequest;
 import com.p2.product_service.service.SKUService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/skus")
@@ -77,51 +76,6 @@ public class SKUController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<SKUDTO> createSKU(@RequestBody SKUCreateDTO dto, HttpServletRequest request) {
-        if (!isAdmin(request))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        try {
-            SKUDTO createdSKU = skuService.createSKU(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdSKU);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PostMapping("/import")
-    public ResponseEntity<Map<String, Object>> importFromCSV(
-            @RequestParam("file") MultipartFile file,
-            HttpServletRequest request) {
-
-        if (!isAdmin(request)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Access Denied: Admin role required"));
-        }
-
-        if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Valid CSV file required"));
-        }
-
-        try {
-            List<SKUDTO> importedSKUs = skuService.importFromCSV(getUserId(request), file);
-
-            // Trigger Kafka for each imported SKU
-            for (SKUDTO sku : importedSKUs) {
-                producerService.sendMessage("sku-updates", sku.sku());
-            }
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "Successfully imported " + importedSKUs.size() + " SKUs",
-                    "skus", importedSKUs));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
-        }
-    }
-
     @DeleteMapping("/{skuId}")
     public ResponseEntity<Void> deleteSKU(@PathVariable Long skuId, HttpServletRequest request) {
         if (!isAdmin(request))
@@ -144,5 +98,11 @@ public class SKUController {
 
         producerService.sendMessage("sku-updates", sku);
         return ResponseEntity.ok("Sent Kafka message for SKU: " + sku);
+    }
+
+    @GetMapping()
+    public ResponseEntity<?> getProductDetails(@RequestBody DataBrightRequest request){
+        List<SKU> skus = skuService.getSKUs();
+        return ResponseEntity.ok(skus);
     }
 }

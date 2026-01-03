@@ -1,147 +1,134 @@
 package com.p2.product_service.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.product_service.dto.SKUCreateDTO;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.exception.ResourceNotFoundException;
 import com.p2.product_service.model.SKU;
+import com.p2.product_service.model.request.DataBrightRequest;
+import com.p2.product_service.model.request.ProductDetails;
+import com.p2.product_service.model.request.ProductRequest;
+import com.p2.product_service.model.response.DataBrightResponse;
 import com.p2.product_service.repository.SKURepository;
 import com.p2.product_service.util.DataTransformUtil;
 import com.p2.product_service.util.ValidationUtil;
+import lombok.AllArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.http.protocol.HTTP;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class SKUService {
 
     private final SKURepository skuRepository;
     private final BasicCalculationService calculationService;
+    private final HttpClient httpClient;
 
-    public SKUService(SKURepository skuRepository, BasicCalculationService calculationService) {
+    public SKUService(SKURepository skuRepository, BasicCalculationService calculationService, HttpClient httpClient) {
         this.skuRepository = skuRepository;
         this.calculationService = calculationService;
+        this.httpClient = httpClient;
     }
 
-    public SKUDTO createSKU(SKUCreateDTO dto) {
-        ValidationUtil.validateSKUFormat(dto.sku());
-        ValidationUtil.validateProductName(dto.productName());
-        ValidationUtil.validateRequired(dto.description(), "Description");
-        ValidationUtil.validateCategory(dto.category());
-        ValidationUtil.validateDimension(dto.length(), "Length");
-        ValidationUtil.validateDimension(dto.width(), "Width");
-        ValidationUtil.validateDimension(dto.height(), "Height");
-        ValidationUtil.validateWeight(dto.weight());
-        ValidationUtil.validatePrice(dto.sellingPrice(), "Selling Price");
+    @Value("${brightdata.api.url}")
+    private String brightDataApiUrl;
 
-        if (skuRepository.existsBySku(dto.sku())) {
-            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-        }
+    @Value("${brightdata.api.key}")
+    private String apiKey;
 
-        SKU sku = new SKU(
-                dto.sku(),
-                dto.productName(),
-                dto.description(),
-                dto.length(),
-                dto.width(),
-                dto.height(),
-                dto.weight(),
-                dto.category(),
-                dto.sellingPrice()
-        );
-
-        calculateAndSetFees(sku);
-
-        try {
-            SKU savedSku = skuRepository.save(sku);
-            return DataTransformUtil.toSKUDTO(savedSku);
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-        }
+    public List<SKU> getSKUs() {
+//        List<ProductDetails> productDetails = new ArrayList<>();
+//        urls.forEach(url -> {
+//            ProductDetails productDetail = new ProductDetails();
+//            productDetail.setUrl(url);
+//            productDetails.add(productDetail);
+//        });
+//
+//        DataBrightRequest dataBrightRequest = new DataBrightRequest();
+//        dataBrightRequest.setInput(productDetails);
+//
+//        ObjectMapper mapper = new ObjectMapper();
+//
+//        String requestBody = mapper.writeValueAsString(dataBrightRequest);
+//
+//        HttpRequest request = HttpRequest.newBuilder()
+//                .uri(new URI(brightDataApiUrl))
+//                .header("Authorization", "Bearer " + apiKey)
+//                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+//                .build();
+//
+//        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+//        DataBrightResponse dbResponse = mapper.readValue(response.body(), DataBrightResponse.class);
+//
+//        SKU sku = new SKU();
+//
+//        sku.setProductName(dbResponse.getTitle());
+//        sku.setSellingPrice(BigDecimal.valueOf(dbResponse.getFinalPrice()));
+//        sku.setDescription(dbResponse.getDescription());
+//        sku.setImageUrl(dbResponse.getImageUrl());
+//        sku.setWeight(BigDecimal.valueOf(dbResponse.getItemWeight()));
+//
+//
+//        return new SKU();
+    return skuRepository.findAll();
     }
 
-    public List<SKUDTO> importFromCSV(Long userId, MultipartFile file) {
-        List<SKUDTO> importedSKUs = new ArrayList<>();
-        List<String> errors = new ArrayList<>();
-
-        try (Reader reader = new BufferedReader(
-                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-
-            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
-                    .withFirstRecordAsHeader()
-                    .withIgnoreHeaderCase()
-                    .withTrim());
-
-            for (CSVRecord record : csvParser) {
-                try {
-                    SKUCreateDTO dto = parseCSVRecord(record);
-                    SKUDTO skuDTO = createSKU(dto);
-                    importedSKUs.add(skuDTO);
-                } catch (Exception e) {
-                    errors.add("Row " + record.getRecordNumber() + ": " + e.getMessage());
-                }
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse CSV file: " + e.getMessage(), e);
-        }
-
-        if (!errors.isEmpty() && importedSKUs.isEmpty()) {
-            throw new RuntimeException("Failed to import any SKUs. Errors: " + String.join(", ", errors));
-        }
-
-        return importedSKUs;
-    }
-
-    private SKUCreateDTO parseCSVRecord(CSVRecord record) {
-        String sku = getRequiredField(record, "SKU");
-        String productName = getRequiredField(record, "Product Name");
-        String description = getRequiredField(record, "Description");
-        BigDecimal length = parseDecimal(record, "Length");
-        BigDecimal width = parseDecimal(record, "Width");
-        BigDecimal height = parseDecimal(record, "Height");
-        BigDecimal weight = parseDecimal(record, "Weight");
-        String category = getRequiredField(record, "Category");
-        BigDecimal sellingPrice = parseDecimal(record, "Selling Price");
-
-        return new SKUCreateDTO(
-                sku, productName, description, length, width, height,
-                weight, category, sellingPrice
-        );
-    }
-
-    private String getRequiredField(CSVRecord record, String header) {
-        String value = record.get(header);
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Required field missing: " + header);
-        }
-        return value.trim();
-    }
-
-    private BigDecimal parseDecimal(CSVRecord record, String header) {
-        try {
-            String value = record.get(header);
-            if (value == null || value.trim().isEmpty()) {
-                return null;
-            }
-            value = value.replace("$", "").replace(",", "").trim();
-            return DataTransformUtil.parseBigDecimal(value);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid number format for " + header + ": " + e.getMessage());
-        }
-    }
+//    public SKUDTO createSKU(SKUCreateDTO dto) {
+//        ValidationUtil.validateSKUFormat(dto.sku());
+//        ValidationUtil.validateProductName(dto.productName());
+//        ValidationUtil.validateRequired(dto.description(), "Description");
+//        ValidationUtil.validateCategory(dto.category());
+//        ValidationUtil.validateDimension(dto.length(), "Length");
+//        ValidationUtil.validateDimension(dto.width(), "Width");
+//        ValidationUtil.validateDimension(dto.height(), "Height");
+//        ValidationUtil.validateWeight(dto.weight());
+//        ValidationUtil.validatePrice(dto.sellingPrice(), "Selling Price");
+//
+//        if (skuRepository.existsBySku(dto.sku())) {
+//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
+//        }
+//
+//        SKU sku = new SKU(
+//                dto.sku(),
+//                dto.productName(),
+//                dto.description(),
+//                dto.length(),
+//                dto.width(),
+//                dto.height(),
+//                dto.weight(),
+//                dto.category(),
+//                dto.sellingPrice()
+//        );
+//
+//        calculateAndSetFees(sku);
+//
+//        try {
+//            SKU savedSku = skuRepository.save(sku);
+//            return DataTransformUtil.toSKUDTO(savedSku);
+//        } catch (DataIntegrityViolationException e) {
+//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
+//        }
+//    }
 
     private void calculateAndSetFees(SKU sku) {
         if (sku.getLength() != null && sku.getWidth() != null &&

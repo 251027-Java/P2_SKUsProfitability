@@ -1,0 +1,373 @@
+"title": "Apple AirPods Pro 2 Wireless Earbuds, Active Noise Cancellation, Hearing Aid Feature, Bluetooth Headphones, Transparency, Personalized Spatial Audio, High-Fidelity Sound, H2 Chip, USB-C Charging",
+    "seller_name": "Woot",
+    "brand": "Apple",
+    "description": "About this item PIONEERING HEARING — AirPods Pro 2 unlock the world’s first all-in-one hearing health experience: a scientifically validated Hearing Test,* clinical-grade and active Hearing Protection.* INTELLIGENT NOISE CONTROL — Active Noise Cancellation removes up to 2x more background noise.* Transparency mode lets you hear the world around you, and Adaptive Audio seamlessly blends Active Noise Cancellation and Transparency mode for the best listening experience in any environment.* And when you’re speaking with someone nearby, Conversation Awareness automatically lowers the volume of what’s playing.* IMPROVED SOUND AND CALL QUALITY — The Apple-designed H2 chip helps to create deeply immersive sound. The low-distortion, custom-built driver delivers crisp, clear high notes and full, rich bass in stunning definition. Voice Isolation improves the quality of phone calls in loud conditions.* CUSTOMIZABLE FIT — Includes four pairs of silicone tips (XS, S, M, L) to fit a wide range of ear shapes and provide all-day comfort. The tips create an acoustic seal to help keep out noise and secure AirPods Pro 2 in place. DUST, SWEAT, AND WATER RESISTANT — Both AirPods Pro and the MagSafe Charging Case are IP54 dust, sweat, and water resistant, so you can listen comfortably in more conditions.* PERSONALIZED SPATIAL AUDIO — With sound that suits your unique ear shape along with dynamic head tracking, AirPods Pro 2 deliver an immersive listening experience that places sound all around you.* You can also listen to select songs, shows, and movies in Dolby Atmos. A HIGHER LEVEL OF CONTROL — Simply swipe, press, and hold the stem to manage playback functions using Touch control. And with Siri Interactions, simply nod your head yes or shake your head no when Siri asks if you’d like to hear a message, answer a call, or manage a notification.* LONG BATTERY LIFE — Get up to 6 hours of listening time with Active Noise Cancellation enabled. And get up to 30 hours of total listening time with Active Noise Cancellation enabled, using the case.* A MORE CAPABLE CASE— Keep track of AirPods Pro 2 with Precision Finding and a built-in speaker.* A lanyard loop helps keep your AirPods Pro 2 close. Charge with an Apple Watch or MagSafe Charger, USB-C Charge Cable, or Qi-certified charger. LEGAL DISCLAIMERS — This is a summary of the main product features. See “Additional information” to learn more. Show more › See more product details",
+    "initial_price": 249,
+    "currency": "USD",
+    "availability": "In Stock",
+    "reviews_count": 43339,
+    "parent_asin": "B0FBXVLLQF",
+    "asin": "B0D1XD1ZV3",
+    "buybox_seller": "Woot",
+    "number_of_sellers": 1,
+    "root_bs_rank": null,
+    "answered_questions": 0,
+    "domain": "https://www.amazon.com/",
+    "images_count": 7,
+    "url": "https://www.amazon.com/Apple-Cancellation-Transparency-Personalized-High-Fidelity/dp/B0D1XD1ZV3?th=1&psc=1&language=en_US&currency=USD",
+    "video_count": 2,
+    "image_url": "https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg",
+    "item_weight": "0.24 Kilograms",
+    "rating": 4.6,
+    "product_dimensions": "0.94 x 0.86 x 1.22 inches",
+    "seller_id": "A1KWJVS57NX03I",
+    "image": "https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg",
+    "date_first_available": "April 23, 2024",
+    "discount": "-20%",
+    "model_number": "MTJV3LL/A",
+    "manufacturer": "Apple",
+    "plus_content": false,
+    "upc": "195949704529",
+    "video": true,
+    "top_review": "I’ve tried several hearing aid substitutes over the years, my past favorite being the now unavailable Bose Hearphones and costing $500.  Rather than just a sound amplifier, these had several functions allowing you to filter and focus sounds in various ways and for various situations. They were pretty good.But now Apple has added some great features to their AirPods 2—features that function like far more expensive hearing aids and at less than half the price of the Bose product. I’ve owned these for a month or so and am now just getting the hang of how to use them. If there is a downside to these earbuds it is the rather deep and confusing tech included in them (or, at least confusing for a grandfatherly type like me). Once they are Bluetooth connected to your iPhone (They connect very easily with the button on the front of the EarPod’s charging case.) they should automatically connect every time you put them in your ears.  You will then be able to access all the functions by tapping the “settings” app on your phone. You will find a heading near the top of the list just below the box with your name and iCloud options. Tapping on this will allow you to drill down through several pages of options.  There are a lot of options there and it can be confusing, but experimenting with the various functions will help you figure out their purpose.The key here is to drill down to find the hearing test. This will quickly test for hearing loss by leading you through a series of tones of varying in pitch and volume. The end result will be an audiogram that can be used to program your EarPods as hearing aids.  As stated before, it took me several weeks to find and activate this feature, but when I did a whole new experience dawned. Just be patient and search around for this function. It works very well.Of course, these things also serve as EarPods to listen to music or podcasts.  (May I recommend “Pat Gray Unleashed!” if your bent is conservative commentary and just plain fooling around). The quality of sound is phenomenal and the buds are more comfortable than most to keep in your ears for an extended time. To control the volume for this function you can TRY to use the external control buttons located on those silly looking stems that hang out of your ears (good luck) OR just open the “Control Center” page (slide one finger upward on your iPhone screen to access this page) where you’ll find the volume slider.  If your EarPods are connected and in your ears you’ll see the slider is marked as controlling the AirPods.I really like these things now that I’m a little more familiar with them. The quality and value are exquisite. If I discover more, I’ll edit this comment.4 MONTHS LATER: Apple has improved the controls for these in their latest iOS update. The functions I had to dig around to find are now more easily accessed. Getting to the hearing test is now fairly straight forward.",
+    "final_price_high": null,
+    "final_price": 199,
+    "variations": [
+        {
+            "name": "Without AppleCare+",
+            "asin": "B0D1XD1ZV3",
+            "price": null,
+            "currency": "USD",
+            "unit_price": null,
+            "image": null,
+            "color": null,
+            "size": null
+        }
+    ],
+    "delivery": [
+        "FREE delivery Monday, January 5",
+        "Or fastest delivery Sunday, January 4. Order within 7 hrs 33 mins"
+    ],
+    "features": [
+        "PIONEERING HEARING — AirPods Pro 2 unlock the world’s first all-in-one hearing health experience a scientifically validated Hearing Test,* clinical-grade and active Hearing Protection.*",
+        "INTELLIGENT NOISE CONTROL — Active Noise Cancellation removes up to 2x more background noise.* Transparency mode lets you hear the world around you, and Adaptive Audio seamlessly blends Active Noise Cancellation and Transparency mode for the best listening experience in any environment.* And when you’re speaking with someone nearby, Conversation Awareness automatically lowers the volume of what’s playing.*",
+        "IMPROVED SOUND AND CALL QUALITY — The Apple-designed H2 chip helps to create deeply immersive sound. The low-distortion, custom-built driver delivers crisp, clear high notes and full, rich bass in stunning definition. Voice Isolation improves the quality of phone calls in loud conditions.*",
+        "CUSTOMIZABLE FIT — Includes four pairs of silicone tips (XS, S, M, L) to fit a wide range of ear shapes and provide all-day comfort. The tips create an acoustic seal to help keep out noise and secure AirPods Pro 2 in place.",
+        "DUST, SWEAT, AND WATER RESISTANT — Both AirPods Pro and the MagSafe Charging Case are IP54 dust, sweat, and water resistant, so you can listen comfortably in more conditions.*",
+        "PERSONALIZED SPATIAL AUDIO — With sound that suits your unique ear shape along with dynamic head tracking, AirPods Pro 2 deliver an immersive listening experience that places sound all around you.* You can also listen to select songs, shows, and movies in Dolby Atmos.",
+        "A HIGHER LEVEL OF CONTROL — Simply swipe, press, and hold the stem to manage playback functions using Touch control. And with Siri Interactions, simply nod your head yes or shake your head no when Siri asks if you’d like to hear a message, answer a call, or manage a notification.*",
+        "LONG BATTERY LIFE — Get up to 6 hours of listening time with Active Noise Cancellation enabled. And get up to 30 hours of total listening time with Active Noise Cancellation enabled, using the case.*",
+        "A MORE CAPABLE CASE— Keep track of AirPods Pro 2 with Precision Finding and a built-in speaker.* A lanyard loop helps keep your AirPods Pro 2 close. Charge with an Apple Watch or MagSafe Charger, USB-C Charge Cable, or Qi-certified charger.",
+        "LEGAL DISCLAIMERS — This is a summary of the main product features. See “Additional information” to learn more."
+    ],
+    "buybox_prices": {
+        "final_price": 199,
+        "initial_price": 249,
+        "discount": "-20%",
+        "unit_price": null
+    },
+    "bought_past_month": 10000,
+    "is_available": true,
+    "root_bs_category": null,
+    "bs_category": null,
+    "bs_rank": null,
+    "badge": null,
+    "subcategory_rank": null,
+    "amazon_choice": false,
+    "images": [
+        "https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/611pEx7220L._AC_SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/81Zg3Ev2M5L._AC_SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/41QztOA1UuL._AC_SL1200_.jpg",
+        "https://m.media-amazon.com/images/I/71d1WoCdwwL._AC_SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71wkJxedzjL._AC_SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/51RcxVAXDWL._AC_SL1500_.jpg"
+    ],
+    "product_details": [
+        {
+            "type": "Model Name",
+            "value": "AirPods Pro (2nd Gen, 2023)"
+        },
+        {
+            "type": "Connectivity Technology",
+            "value": "Apple H2 Chip, Bluetooth, Wireless"
+        },
+        {
+            "type": "Wireless Communication Technology",
+            "value": "Apple H2 Chip, Bluetooth, NFC"
+        },
+        {
+            "type": "Included Components",
+            "value": "Cable, Wireless Charging Case"
+        },
+        {
+            "type": "Age Range (Description)",
+            "value": "Adult"
+        },
+        {
+            "type": "Material",
+            "value": "Plastic"
+        },
+        {
+            "type": "Specific Uses For Product",
+            "value": "Gaming, Music, Sport"
+        },
+        {
+            "type": "Recommended Uses For Product",
+            "value": "Calling, Exercising, Gaming, Recording, Running"
+        },
+        {
+            "type": "Compatible Devices",
+            "value": "Cellphones, Desktops, Gaming Consoles, Laptops, Tablets"
+        },
+        {
+            "type": "Control Type",
+            "value": "Call Control, Volume Control, Media Control, App Control, Voice Control, Noise Control, Siri"
+        },
+        {
+            "type": "Cable Feature",
+            "value": "With USB-C Cable"
+        },
+        {
+            "type": "Item Weight",
+            "value": "0.24 Kilograms"
+        },
+        {
+            "type": "Water Resistance Level",
+            "value": "Water Resistant"
+        },
+        {
+            "type": "Customer Package Type",
+            "value": "Standard Packaging"
+        },
+        {
+            "type": "Unit Count",
+            "value": "1.0 Count"
+        },
+        {
+            "type": "Style",
+            "value": "Without AppleCare+"
+        },
+        {
+            "type": "Control Method",
+            "value": "Voice"
+        },
+        {
+            "type": "Number of Items",
+            "value": "1"
+        },
+        {
+            "type": "Controller Type",
+            "value": "Siri"
+        },
+        {
+            "type": "Battery Life",
+            "value": "6 Hours"
+        },
+        {
+            "type": "Bluetooth Version",
+            "value": "5.3"
+        },
+        {
+            "type": "Earpiece Shape",
+            "value": "Oval"
+        },
+        {
+            "type": "UPC",
+            "value": "195949704529"
+        },
+        {
+            "type": "Special Feature",
+            "value": "Lightweight, Microphone Included, Phone Control, Sports & Exercise, Volume Control"
+        },
+        {
+            "type": "Manufacturer",
+            "value": "Apple"
+        },
+        {
+            "type": "Product Dimensions",
+            "value": "0.94 x 0.86 x 1.22 inches"
+        },
+        {
+            "type": "Item Weight",
+            "value": "8.4 ounces"
+        },
+        {
+            "type": "ASIN",
+            "value": "B0D1XD1ZV3"
+        },
+        {
+            "type": "Item model number",
+            "value": "MTJV3LL/A"
+        },
+        {
+            "type": "Batteries",
+            "value": "3 Lithium Ion batteries required. (included)"
+        },
+        {
+            "type": "Date First Available",
+            "value": "April 23, 2024"
+        },
+        {
+            "type": "Brand",
+            "value": "Apple"
+        },
+        {
+            "type": "Color",
+            "value": "White"
+        },
+        {
+            "type": "Ear Placement",
+            "value": "In Ear"
+        },
+        {
+            "type": "Form Factor",
+            "value": "In Ear"
+        },
+        {
+            "type": "Noise Control",
+            "value": "Active Noise Cancellation"
+        }
+    ],
+    "prices_breakdown": {
+        "typical_price": null,
+        "list_price": 249,
+        "deal_type": null
+    },
+    "country_of_origin": null,
+    "from_the_brand": null,
+    "product_description": null,
+    "seller_url": "https://www.amazon.com/sp?ie=UTF8&seller=A1KWJVS57NX03I&asin=B0D1XD1ZV3",
+    "customer_says": "Customers find these earbuds to be high-quality with outstanding sound quality and amazing noise cancellation. Moreover, they work better than hearing aids and are well worth the price. The fit is positive, with customers noting they stay securely in place. However, there are mixed experiences with charging - while some report long-lasting power, others mention the earbuds stop charging after three months of use. Additionally, compatibility receives mixed feedback, with some customers reporting seamless connectivity while others experience connection issues.",
+    "sustainability_features": null,
+    "climate_pledge_friendly": false,
+    "videos": [
+        "https://www.amazon.com/vdp/041800e607ff4140bb04f5476a38c865",
+        "https://www.amazon.com/vdp/0323d9c44d2840f8bdc58346e3999d52"
+    ],
+    "other_sellers_prices": [
+        {
+            "price": 199,
+            "price_per_unit": null,
+            "unit": null,
+            "delivery": "FREE delivery Monday, January 5. Or Prime members get FREE delivery Saturday, January 3. Order within 8 hrs 33 mins. Join Prime",
+            "seller_name": "Woot",
+            "seller_url": "https://www.amazon.com/gp/aag/main?ie=UTF8&seller=A1KWJVS57NX03I&isAmazonFulfilled=1&asin=B0D1XD1ZV3&ref_=olp_merch_name_0",
+            "seller_rating": 4.5,
+            "ships_from": "Amazon.com",
+            "num_of_ratings": 43339
+        },
+        {
+            "price": 181.6,
+            "price_per_unit": null,
+            "unit": null,
+            "delivery": "FREE delivery Wednesday, January 7. Or fastest delivery Monday, January 5",
+            "seller_name": "Amazon Resale",
+            "seller_url": "https://www.amazon.com/Warehouse-Deals/b?ie=UTF8&node=10158976011",
+            "seller_rating": 0,
+            "ships_from": "Amazon.com",
+            "num_of_ratings": 0
+        },
+        {
+            "price": 183.43,
+            "price_per_unit": null,
+            "unit": null,
+            "delivery": "FREE delivery Monday, January 5. Or Prime members get FREE delivery Saturday, January 3. Order within 8 hrs 33 mins. Join Prime",
+            "seller_name": "Amazon Resale",
+            "seller_url": "https://www.amazon.com/Warehouse-Deals/b?ie=UTF8&node=10158976011",
+            "seller_rating": 0,
+            "ships_from": "Amazon.com",
+            "num_of_ratings": 0
+        },
+        {
+            "price": 187.15,
+            "price_per_unit": null,
+            "unit": null,
+            "delivery": "FREE delivery Monday, January 5. Or Prime members get FREE delivery Saturday, January 3. Order within 8 hrs 33 mins. Join Prime",
+            "seller_name": "Amazon Resale",
+            "seller_url": "https://www.amazon.com/Warehouse-Deals/b?ie=UTF8&node=10158976011",
+            "seller_rating": 0,
+            "ships_from": "Amazon.com",
+            "num_of_ratings": 0
+        },
+        {
+            "price": 222.63,
+            "price_per_unit": null,
+            "unit": null,
+            "delivery": "FREE delivery Tuesday, January 6. Details. Or fastest delivery Monday, January 5. Details",
+            "seller_name": "DataVision Computer Video",
+            "seller_url": "https://www.amazon.com/gp/aag/main?ie=UTF8&seller=AN8LN2YPKS7DF&isAmazonFulfilled=0&asin=B0D1XD1ZV3&ref_=olp_merch_name_4",
+            "seller_rating": 4,
+            "ships_from": "DataVision Computer Video",
+            "num_of_ratings": 145159
+        },
+        {
+            "price": 223.63,
+            "price_per_unit": null,
+            "unit": null,
+            "delivery": "FREE delivery Monday, January 5. Details. Or fastest delivery Saturday, January 3. Details",
+            "seller_name": "6ave",
+            "seller_url": "https://www.amazon.com/gp/aag/main?ie=UTF8&seller=ALAQLAKJ574UN&isAmazonFulfilled=0&asin=B0D1XD1ZV3&ref_=olp_merch_name_5",
+            "seller_rating": 5,
+            "ships_from": "6ave",
+            "num_of_ratings": 114972
+        },
+        {
+            "price": 234.72,
+            "price_per_unit": null,
+            "unit": null,
+            "delivery": "FREE delivery Saturday, January 3. Details",
+            "seller_name": "6ave",
+            "seller_url": "https://www.amazon.com/gp/aag/main?ie=UTF8&seller=ALAQLAKJ574UN&isAmazonFulfilled=0&asin=B0D1XD1ZV3&ref_=olp_merch_name_6",
+            "seller_rating": 5,
+            "ships_from": "6ave",
+            "num_of_ratings": 114972
+        }
+    ],
+    "downloadable_videos": [
+        "https://m.media-amazon.com/images/S/vse-vms-transcoding-artifact-us-east-1-prod/7601bd9a-8e34-4309-bad7-016e76738762/default.jobtemplate.hls.m3u8",
+        "https://m.media-amazon.com/images/S/vse-vms-transcoding-artifact-us-east-1-prod/a2cf33ec-0674-4023-aca1-4c8fb006227c/default.jobtemplate.hls.m3u8"
+    ],
+    "editorial_reviews": null,
+    "about_the_author": null,
+    "zipcode": "11001",
+    "coupon": null,
+    "sponsered": false,
+    "store_url": "https://www.amazon.com/stores/Apple/page/77D9E1F7-0337-4282-9DB6-B6B8FB2DC98D?lp_asin=B0D1XD1ZV3&ref_=ast_bln",
+    "ships_from": "Amazon",
+    "city": null,
+    "customers_say": {
+        "keywords": {
+            "positive": null,
+            "negative": null,
+            "mixed": null
+        }
+    },
+    "max_quantity_available": 35,
+    "variations_values": [
+        {
+            "variant name": "Style",
+            "values": [
+                "Without AppleCare+"
+            ]
+        }
+    ],
+    "language": null,
+    "return_policy": "FREE refund/replacement until Jan 15, 2026",
+    "inactive_buy_box": {
+        "price": 187.15
+    },
+    "buybox_seller_rating": null,
+    "premium_brand": false,
+    "amazon_prime": true,
+    "coupon_description": null,
+    "all_badges": null,
+    "sponsored": false,
+    "timestamp": "2025-12-31T21:26:20.484Z",
+    "input": {
+        "url": "https://www.amazon.com/Apple-Cancellation-Transparency-Personalized-High-Fidelity/dp/B0D1XD1ZV3",
+        "asin": "",
+        "zipcode": "",
+        "language": ""
+    }
+}

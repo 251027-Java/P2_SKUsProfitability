@@ -13,7 +13,7 @@ public class DataTransformUtil {
         if (sku == null) return null;
         return new SKUDTO(
             sku.getSkuId(),
-            sku.getUserId(),
+            //sku.getUserId(),
             sku.getSku(),
             sku.getProductName(),
             sku.getDescription(),

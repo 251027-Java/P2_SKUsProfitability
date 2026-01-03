@@ -19,25 +19,11 @@ public class ListController {
         this.listService = listService;
     }
 
-//    // Helper: Get User ID from Interceptor attributes
-//    private Long getUserId(HttpServletRequest request) {
-//        return (Long) request.getAttribute("userId");
-//    }
-//
-//    // Helper: Check if the user is a SELLER
-//    private boolean isSeller(HttpServletRequest request) {
-//        String role = (String) request.getAttribute("userRole");
-//        return "SELLER".equalsIgnoreCase(role);
-//    }
-
-    //Testing
     private Long getUserId(HttpServletRequest request) {
-        // Hardcode to 1L so the controller thinks a user is logged in
         return 1L;
     }
 
     private boolean isSeller(HttpServletRequest request) {
-        // Hardcode to true so you can access Seller-only endpoints
         return true;
     }
 

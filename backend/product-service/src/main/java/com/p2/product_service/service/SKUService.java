@@ -1,38 +1,89 @@
 package com.p2.product_service.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.product_service.dto.SKUCreateDTO;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.exception.ResourceNotFoundException;
 import com.p2.product_service.model.SKU;
+import com.p2.product_service.model.request.DataBrightRequest;
+import com.p2.product_service.model.request.ProductDetails;
+import com.p2.product_service.model.request.ProductRequest;
+import com.p2.product_service.model.response.DataBrightResponse;
 import com.p2.product_service.repository.SKURepository;
 import com.p2.product_service.util.DataTransformUtil;
 import com.p2.product_service.util.ValidationUtil;
+import lombok.AllArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.http.protocol.HTTP;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
+@AllArgsConstructor
 public class SKUService {
 
     private final SKURepository skuRepository;
     private final BasicCalculationService calculationService;
+    private final HttpClient httpClient;
 
-    public SKUService(SKURepository skuRepository, BasicCalculationService calculationService) {
-        this.skuRepository = skuRepository;
-        this.calculationService = calculationService;
+    @Value("${brightdata.api.url}")
+    private String brightDataApiUrl;
+
+    @Value("${brightdata.api.key}")
+    private String apiKey;
+
+    public SKU getProductDetails(List<String> urls) throws URISyntaxException, IOException, InterruptedException {
+        List<ProductDetails> productDetails = new ArrayList<>();
+        urls.forEach(url -> {
+            ProductDetails productDetail = new ProductDetails();
+            productDetail.setUrl(url);
+            productDetails.add(productDetail);
+        });
+
+        DataBrightRequest dataBrightRequest = new DataBrightRequest();
+        dataBrightRequest.setInput(productDetails);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        String requestBody = mapper.writeValueAsString(dataBrightRequest);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(brightDataApiUrl))
+                .header("Authorization", "Bearer " + apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        DataBrightResponse dbResponse = mapper.readValue(response.body(), DataBrightResponse.class);
+
+        SKU sku = new SKU();
+
+        sku.setProductName(dbResponse.getTitle());
+        sku.setSellingPrice(BigDecimal.valueOf(dbResponse.getFinalPrice()));
+        sku.setDescription(dbResponse.getDescription());
+//        sku.set
+
+        return new SKU();
+
     }
 
     public SKUDTO createSKU(SKUCreateDTO dto) {

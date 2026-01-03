@@ -38,12 +38,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
-@AllArgsConstructor
 public class SKUService {
 
     private final SKURepository skuRepository;
     private final BasicCalculationService calculationService;
     private final HttpClient httpClient;
+
+    public SKUService(SKURepository skuRepository, BasicCalculationService calculationService, HttpClient httpClient) {
+        this.skuRepository = skuRepository;
+        this.calculationService = calculationService;
+        this.httpClient = httpClient;
+    }
 
     @Value("${brightdata.api.url}")
     private String brightDataApiUrl;
@@ -51,148 +56,79 @@ public class SKUService {
     @Value("${brightdata.api.key}")
     private String apiKey;
 
-    public SKU getProductDetails(List<String> urls) throws URISyntaxException, IOException, InterruptedException {
-        List<ProductDetails> productDetails = new ArrayList<>();
-        urls.forEach(url -> {
-            ProductDetails productDetail = new ProductDetails();
-            productDetail.setUrl(url);
-            productDetails.add(productDetail);
-        });
-
-        DataBrightRequest dataBrightRequest = new DataBrightRequest();
-        dataBrightRequest.setInput(productDetails);
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        String requestBody = mapper.writeValueAsString(dataBrightRequest);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(brightDataApiUrl))
-                .header("Authorization", "Bearer " + apiKey)
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
-
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        DataBrightResponse dbResponse = mapper.readValue(response.body(), DataBrightResponse.class);
-
-        SKU sku = new SKU();
-
-        sku.setProductName(dbResponse.getTitle());
-        sku.setSellingPrice(BigDecimal.valueOf(dbResponse.getFinalPrice()));
-        sku.setDescription(dbResponse.getDescription());
-//        sku.set
-
-        return new SKU();
-
+    public List<SKU> getSKUs() {
+//        List<ProductDetails> productDetails = new ArrayList<>();
+//        urls.forEach(url -> {
+//            ProductDetails productDetail = new ProductDetails();
+//            productDetail.setUrl(url);
+//            productDetails.add(productDetail);
+//        });
+//
+//        DataBrightRequest dataBrightRequest = new DataBrightRequest();
+//        dataBrightRequest.setInput(productDetails);
+//
+//        ObjectMapper mapper = new ObjectMapper();
+//
+//        String requestBody = mapper.writeValueAsString(dataBrightRequest);
+//
+//        HttpRequest request = HttpRequest.newBuilder()
+//                .uri(new URI(brightDataApiUrl))
+//                .header("Authorization", "Bearer " + apiKey)
+//                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+//                .build();
+//
+//        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+//        DataBrightResponse dbResponse = mapper.readValue(response.body(), DataBrightResponse.class);
+//
+//        SKU sku = new SKU();
+//
+//        sku.setProductName(dbResponse.getTitle());
+//        sku.setSellingPrice(BigDecimal.valueOf(dbResponse.getFinalPrice()));
+//        sku.setDescription(dbResponse.getDescription());
+//        sku.setImageUrl(dbResponse.getImageUrl());
+//        sku.setWeight(BigDecimal.valueOf(dbResponse.getItemWeight()));
+//
+//
+//        return new SKU();
+    return skuRepository.findAll();
     }
 
-    public SKUDTO createSKU(SKUCreateDTO dto) {
-        ValidationUtil.validateSKUFormat(dto.sku());
-        ValidationUtil.validateProductName(dto.productName());
-        ValidationUtil.validateRequired(dto.description(), "Description");
-        ValidationUtil.validateCategory(dto.category());
-        ValidationUtil.validateDimension(dto.length(), "Length");
-        ValidationUtil.validateDimension(dto.width(), "Width");
-        ValidationUtil.validateDimension(dto.height(), "Height");
-        ValidationUtil.validateWeight(dto.weight());
-        ValidationUtil.validatePrice(dto.sellingPrice(), "Selling Price");
-
-        if (skuRepository.existsBySku(dto.sku())) {
-            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-        }
-
-        SKU sku = new SKU(
-                dto.sku(),
-                dto.productName(),
-                dto.description(),
-                dto.length(),
-                dto.width(),
-                dto.height(),
-                dto.weight(),
-                dto.category(),
-                dto.sellingPrice()
-        );
-
-        calculateAndSetFees(sku);
-
-        try {
-            SKU savedSku = skuRepository.save(sku);
-            return DataTransformUtil.toSKUDTO(savedSku);
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-        }
-    }
-
-    public List<SKUDTO> importFromCSV(Long userId, MultipartFile file) {
-        List<SKUDTO> importedSKUs = new ArrayList<>();
-        List<String> errors = new ArrayList<>();
-
-        try (Reader reader = new BufferedReader(
-                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-
-            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
-                    .withFirstRecordAsHeader()
-                    .withIgnoreHeaderCase()
-                    .withTrim());
-
-            for (CSVRecord record : csvParser) {
-                try {
-                    SKUCreateDTO dto = parseCSVRecord(record);
-                    SKUDTO skuDTO = createSKU(dto);
-                    importedSKUs.add(skuDTO);
-                } catch (Exception e) {
-                    errors.add("Row " + record.getRecordNumber() + ": " + e.getMessage());
-                }
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse CSV file: " + e.getMessage(), e);
-        }
-
-        if (!errors.isEmpty() && importedSKUs.isEmpty()) {
-            throw new RuntimeException("Failed to import any SKUs. Errors: " + String.join(", ", errors));
-        }
-
-        return importedSKUs;
-    }
-
-    private SKUCreateDTO parseCSVRecord(CSVRecord record) {
-        String sku = getRequiredField(record, "SKU");
-        String productName = getRequiredField(record, "Product Name");
-        String description = getRequiredField(record, "Description");
-        BigDecimal length = parseDecimal(record, "Length");
-        BigDecimal width = parseDecimal(record, "Width");
-        BigDecimal height = parseDecimal(record, "Height");
-        BigDecimal weight = parseDecimal(record, "Weight");
-        String category = getRequiredField(record, "Category");
-        BigDecimal sellingPrice = parseDecimal(record, "Selling Price");
-
-        return new SKUCreateDTO(
-                sku, productName, description, length, width, height,
-                weight, category, sellingPrice
-        );
-    }
-
-    private String getRequiredField(CSVRecord record, String header) {
-        String value = record.get(header);
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Required field missing: " + header);
-        }
-        return value.trim();
-    }
-
-    private BigDecimal parseDecimal(CSVRecord record, String header) {
-        try {
-            String value = record.get(header);
-            if (value == null || value.trim().isEmpty()) {
-                return null;
-            }
-            value = value.replace("$", "").replace(",", "").trim();
-            return DataTransformUtil.parseBigDecimal(value);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid number format for " + header + ": " + e.getMessage());
-        }
-    }
+//    public SKUDTO createSKU(SKUCreateDTO dto) {
+//        ValidationUtil.validateSKUFormat(dto.sku());
+//        ValidationUtil.validateProductName(dto.productName());
+//        ValidationUtil.validateRequired(dto.description(), "Description");
+//        ValidationUtil.validateCategory(dto.category());
+//        ValidationUtil.validateDimension(dto.length(), "Length");
+//        ValidationUtil.validateDimension(dto.width(), "Width");
+//        ValidationUtil.validateDimension(dto.height(), "Height");
+//        ValidationUtil.validateWeight(dto.weight());
+//        ValidationUtil.validatePrice(dto.sellingPrice(), "Selling Price");
+//
+//        if (skuRepository.existsBySku(dto.sku())) {
+//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
+//        }
+//
+//        SKU sku = new SKU(
+//                dto.sku(),
+//                dto.productName(),
+//                dto.description(),
+//                dto.length(),
+//                dto.width(),
+//                dto.height(),
+//                dto.weight(),
+//                dto.category(),
+//                dto.sellingPrice()
+//        );
+//
+//        calculateAndSetFees(sku);
+//
+//        try {
+//            SKU savedSku = skuRepository.save(sku);
+//            return DataTransformUtil.toSKUDTO(savedSku);
+//        } catch (DataIntegrityViolationException e) {
+//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
+//        }
+//    }
 
     private void calculateAndSetFees(SKU sku) {
         if (sku.getLength() != null && sku.getWidth() != null &&

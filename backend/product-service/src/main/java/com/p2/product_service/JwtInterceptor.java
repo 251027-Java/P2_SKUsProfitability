@@ -17,12 +17,16 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestUri = request.getRequestURI();
 
-        if (requestUri.equals("/api/skus") ||
-                requestUri.equals("/api/lists") ||
-                requestUri.startsWith("/api/skus/") ||
-                requestUri.startsWith("/api/lists/")) {
-            return true;
-        }
+
+//        if (requestUri.equals("/api/skus") ||
+//                requestUri.equals("/api/lists") ||
+//                requestUri.startsWith("/api/skus/") ||
+//                requestUri.startsWith("/api/lists/")) {
+//            return true;
+//        }
+
+        // 1. REMOVE the "if (requestUri.equals...)" block.
+        // By removing it, EVERY request to all controllers must have a token.
 
         String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {

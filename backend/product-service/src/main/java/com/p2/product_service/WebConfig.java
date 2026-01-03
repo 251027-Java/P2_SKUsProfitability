@@ -16,11 +16,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
-                // Catch only the private data paths
                 .addPathPatterns("/api/skus/**")
                 .addPathPatterns("/api/lists/**")
-
-                // Allow the hello path to bypass the interceptor entirely
                 .excludePathPatterns("/hello","/hello/**");
     }
 

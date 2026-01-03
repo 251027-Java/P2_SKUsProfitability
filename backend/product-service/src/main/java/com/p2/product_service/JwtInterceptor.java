@@ -1,6 +1,5 @@
 package com.p2.product_service;
 
-import com.p2.product_service.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -18,12 +17,16 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestUri = request.getRequestURI();
 
-        if (requestUri.equals("/api/skus") ||
-                requestUri.equals("/api/lists") ||
-                requestUri.startsWith("/api/skus/") ||
-                requestUri.startsWith("/api/lists/")) {
-            return true;
-        }
+
+//        if (requestUri.equals("/api/skus") ||
+//                requestUri.equals("/api/lists") ||
+//                requestUri.startsWith("/api/skus/") ||
+//                requestUri.startsWith("/api/lists/")) {
+//            return true;
+//        }
+
+        // 1. REMOVE the "if (requestUri.equals...)" block.
+        // By removing it, EVERY request to all controllers must have a token.
 
         String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -41,14 +44,6 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         Long userId = jwtUtil.getUserIdFromToken(token);
         String userRole = jwtUtil.getRoleFromToken(token);
-
-//        if (requestUri.startsWith("/api/admin")) {
-//            if (!"ADMIN".equals(userRole)) {
-//                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//                response.getWriter().write("Forbidden: Administrator access required.");
-//                return false;
-//            }
-//        }
 
         request.setAttribute("userId", userId);
         request.setAttribute("userRole", userRole);

@@ -1,4 +1,4 @@
-package com.skuProfitability.producer;
+package com.p2.product_service.service.kafka;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;

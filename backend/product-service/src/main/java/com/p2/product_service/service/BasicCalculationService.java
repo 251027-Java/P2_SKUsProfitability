@@ -168,10 +168,4 @@ public class BasicCalculationService {
     public BigDecimal calculateNetProfit(BigDecimal sellingPrice, BigDecimal totalFees) {
         return CalculationUtil.calculateNetProfit(sellingPrice, totalFees);
     }
-
-//    public BigDecimal calculateProfitMargin(BigDecimal sellingPrice, BigDecimal netProfit) {
-//        BigDecimal margin = CalculationUtil.calculateProfitMargin(netProfit, sellingPrice);
-//        return margin != null ? margin : BigDecimal.ZERO;
-//    }
-
 }

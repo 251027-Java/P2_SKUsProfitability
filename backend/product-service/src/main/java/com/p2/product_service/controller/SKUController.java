@@ -24,13 +24,29 @@ public class SKUController {
         this.producerService = producerService;
     }
 
+    // --- Security Helpers ---
+
     private Long getUserId(HttpServletRequest request) {
-        return 1L;
+        return (Long) request.getAttribute("userId");
     }
 
     private boolean isAdmin(HttpServletRequest request) {
-        return true;
+        String role = (String) request.getAttribute("userRole");
+        return "ADMIN".equalsIgnoreCase(role);
     }
+
+//    // Testing
+//    private Long getUserId(HttpServletRequest request) {
+//        // Hardcode to 1L so the controller thinks a user is logged in
+//        return 1L;
+//    }
+//
+//    private boolean isAdmin(HttpServletRequest request) {
+//        // Always act like an admin for now
+//        return true;
+//    }
+
+    // --- Public/Shared Endpoints (Requires valid login, any role) ---
 
     @GetMapping
     public ResponseEntity<List<SKUDTO>> getAllSKUs(HttpServletRequest request) {

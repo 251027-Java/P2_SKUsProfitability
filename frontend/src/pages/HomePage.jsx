@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllSKUs, createSKU, deleteSKU, importSKUsFromCSV } from '../services/SKUService';
-import { getAllLists, addSKUToList } from '../services/ListService';
+import { getAllSKUs, createSKU, deleteSKU, importSKUsFromCSV, getAllLists, addSKUToList } from '../services/ProductService';
 import SKUForm from '../components/SKUForm';
 import Calculator from '../components/Calculator';
 import Sidebar from '../components/Sidebar';

@@ -70,7 +70,7 @@ function HomePage() {
             const token = localStorage.getItem('token');
             if (!token) {
                 setError('Please log in to view your SKUs.');
-                window.location.href = '/login';
+                window.location.href = '/api/auth/login';
                 return;
             }
             const data = await getAllSKUs();
@@ -81,7 +81,7 @@ function HomePage() {
                 setError('Your session has expired. Please log in again.');
                 localStorage.removeItem('token');
                 setTimeout(() => {
-                    window.location.href = '/login';
+                    window.location.href = '/api/auth/login';
                 }, 2000);
             } else {
                 setError('Failed to load SKUs. Please try again.');

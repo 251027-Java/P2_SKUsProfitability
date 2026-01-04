@@ -11,22 +11,23 @@ spring:
         - id: authservice-route
           uri: lb://AUTH-SERVICE
           predicates:
-            - Path=/api/auth/**
-
-        - id: productservice-skus-route
+            - Path=/auth/**          
+          filters:
+            - StripPrefix=1           
+ 
+        - id: productservice-route
           uri: lb://PRODUCT-SERVICE
           predicates:
-            - Path=/api/skus/**
-
-        - id: productservice-lists-route
-          uri: lb://PRODUCT-SERVICE
-          predicates:
-            - Path=/api/lists/**
-
+            - Path=/product/**     
+          filters:
+            - StripPrefix=1
+ 
         - id: calculatorservice-route
           uri: lb://CALCULATOR-SERVICE
           predicates:
-            - Path=/api/calculator/**
+            - Path=/calculation/**     
+          filters:
+            - StripPrefix=1
 
 # Eureka Client Configuration
 eureka:

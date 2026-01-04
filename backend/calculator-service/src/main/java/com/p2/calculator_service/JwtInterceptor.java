@@ -17,10 +17,10 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestUri = request.getRequestURI();
 
-        if (requestUri.equals("/api/calculator") ||
-                requestUri.startsWith("/api/calculator/")) {
-            return true;
-        }
+//        if (requestUri.equals("/api/calculator") ||
+//                requestUri.startsWith("/api/calculator/")) {
+//            return true;
+//        }
 
         String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {

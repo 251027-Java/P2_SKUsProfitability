@@ -16,11 +16,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
-                // Tell the interceptor to watch calculation paths
                 .addPathPatterns("/api/calculator/**")
-
-                // Explicitly open up the "hello" path
                 .excludePathPatterns(
+
                         "/hello",
                         "/hello/**"
                 );

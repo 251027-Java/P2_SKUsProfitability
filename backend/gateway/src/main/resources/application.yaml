@@ -7,27 +7,30 @@ spring:
 
   cloud:
     gateway:
-      routes:
-        - id: authservice-route
-          uri: lb://AUTH-SERVICE
-          predicates:
-            - Path=/auth/**          
-          filters:
-            - StripPrefix=1           
- 
-        - id: productservice-route
-          uri: lb://PRODUCT-SERVICE
-          predicates:
-            - Path=/product/**     
-          filters:
-            - StripPrefix=1
- 
-        - id: calculatorservice-route
-          uri: lb://CALCULATOR-SERVICE
-          predicates:
-            - Path=/calculation/**     
-          filters:
-            - StripPrefix=1
+      server:
+        webflux:
+          routes:
+            # Route: /clienta/** -> eureka-clienta service
+            - id: authservice-route
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/auth/**          # Match all paths starting with /myclient/
+              filters:
+                - StripPrefix=1            # Remove /myclient prefix before forwarding
+
+            - id: productservice-route
+              uri: lb://PRODUCT-SERVICE
+              predicates:
+                - Path=/product/**          # Match all paths starting with /myclient/
+              filters:
+                - StripPrefix=1
+
+            - id: calculatorservice-route
+              uri: lb://CALCULATOR-SERVICE
+              predicates:
+                - Path=/calculator/**          # Match all paths starting with /myclient/
+              filters:
+                - StripPrefix=1
 
 # Eureka Client Configuration
 eureka:

@@ -19,12 +19,29 @@ public class ListController {
         this.listService = listService;
     }
 
+//    private Long getUserId(HttpServletRequest request) {
+//        return 1L;
+//    }
+//
+//    private boolean isSeller(HttpServletRequest request) {
+//        return true;
+//    }
+
     private Long getUserId(HttpServletRequest request) {
-        return 1L;
+        // We cast the attribute to Long because that's how it was stored by the Interceptor
+        Object userId = request.getAttribute("userId");
+        return userId != null ? (Long) userId : null;
     }
 
     private boolean isSeller(HttpServletRequest request) {
-        return true;
+        // We check the "role" attribute set by our security layer
+        String role = (String) request.getAttribute("userRole");
+        return "SELLER".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role);
+    }
+
+    private boolean isAdmin(HttpServletRequest request) {
+        String role = (String) request.getAttribute("userRole");
+        return "ADMIN".equalsIgnoreCase(role);
     }
 
     @GetMapping

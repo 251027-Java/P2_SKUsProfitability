@@ -17,8 +17,12 @@ public class Calculation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "user_id")
+    @Column(name = "userId")
     private Long userId;
+
+    //NEW FIELD ADDED
+    @Column(length = 100)
+    private String sku;
     
     // Input dimensions
     @Column(precision = 10, scale = 2)

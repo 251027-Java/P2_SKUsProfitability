@@ -1,183 +1,437 @@
-import { getAuthHeaders } from '../utils/api';
-
-// Product Service base URL (handles both SKUs and Lists)
-const PRODUCT_BASE_URL = '/product';
+import { getAuthHeaders, parseResponse } from '../utils/api';
 
 export const getAllSKUs = async () => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/skus`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch('/api/skus', {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        if (response.status === 401) {
-            throw new Error('Unauthorized');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            let errorMessage = 'Failed to fetch SKUs';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else if (responseData) {
+                errorMessage = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMessage);
+            }
+            
+            throw new Error(errorMessage);
         }
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to fetch SKUs');
-    }
 
-    return await response.json();
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
+    }
 };
 
 export const createSKU = async (skuData) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/skus`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(skuData),
-    });
+    try {
+        const response = await fetch('/api/skus', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(skuData),
+        });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to create SKU');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            let errorMessage = 'Failed to create SKU';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 400) {
+                errorMessage = 'Invalid SKU data. Please check your input.';
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else if (responseData) {
+                errorMessage = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMessage);
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 
 export const deleteSKU = async (skuId) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/skus/${skuId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch(`/api/skus/${skuId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        throw new Error('Failed to delete SKU');
+        if (!response.ok) {
+            let errorMessage = 'Failed to delete SKU';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 404) {
+                errorMessage = 'SKU not found';
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            }
+            
+            throw new Error(errorMessage);
+        }
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
 };
 
 export const importSKUsFromCSV = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const headers = getAuthHeaders();
-    delete headers['Content-Type'];
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const headers = getAuthHeaders();
+        delete headers['Content-Type'];
 
-    const response = await fetch(`${PRODUCT_BASE_URL}/skus/import`, {
-        method: 'POST',
-        headers: headers,
-        body: formData,
-    });
+        const response = await fetch('/api/skus/import', {
+            method: 'POST',
+            headers: headers,
+            body: formData,
+        });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to import SKUs');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            let errorMessage = 'Failed to import SKUs';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 400) {
+                if (typeof responseData === 'object' && responseData !== null) {
+                    errorMessage = responseData.error || responseData.message || errorMessage;
+                } else {
+                    errorMessage = 'Invalid file format. Please upload a valid CSV file.';
+                }
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else {
+                if (typeof responseData === 'object' && responseData !== null) {
+                    errorMessage = responseData.error || responseData.message || errorMessage;
+                } else if (typeof responseData === 'string') {
+                    errorMessage = responseData || errorMessage;
+                }
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 
 export const getSKUById = async (skuId) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/skus/${skuId}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch(`/api/skus/${skuId}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        if (response.status === 401) {
-            throw new Error('Unauthorized');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                throw new Error('Unauthorized. Please log in again.');
+            }
+            if (response.status === 404) {
+                return null;
+            }
+            
+            let errorMessage = 'Failed to fetch SKU';
+            if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else if (responseData) {
+                errorMessage = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMessage);
+            }
+            
+            throw new Error(errorMessage);
         }
-        if (response.status === 404) {
-            return null;
+
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
         }
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to fetch SKU');
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 
 export const searchSKU = async (searchTerm) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/skus/search?q=${encodeURIComponent(searchTerm)}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch(`/api/skus/search?q=${encodeURIComponent(searchTerm)}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        if (response.status === 404) {
-            return null;
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                return null;
+            }
+            
+            let errorMessage = 'Failed to search SKU';
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else if (responseData) {
+                errorMessage = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMessage);
+            }
+            
+            throw new Error(errorMessage);
         }
-        throw new Error('Failed to search SKU');
-    }
 
-    return await response.json();
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
+    }
 };
 
 export const getAllLists = async () => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/lists`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch('/api/lists', {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        throw new Error('Failed to fetch lists');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            let errorMessage = 'Failed to fetch lists';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else if (responseData) {
+                errorMessage = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMessage);
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 
 export const createList = async (listData) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/lists`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(listData),
-    });
+    try {
+        const response = await fetch('/api/lists', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(listData),
+        });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to create list');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            let errorMessage = 'Failed to create list';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 400) {
+                errorMessage = 'Invalid list data. Please check your input.';
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else if (responseData) {
+                errorMessage = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMessage);
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 
 export const deleteList = async (listId) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/lists/${listId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch(`/api/lists/${listId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        throw new Error('Failed to delete list');
+        if (!response.ok) {
+            let errorMessage = 'Failed to delete list';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 404) {
+                errorMessage = 'List not found';
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            }
+            
+            throw new Error(errorMessage);
+        }
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
 };
 
 export const addSKUToList = async (listId, skuId) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/lists/${listId}/skus/${skuId}`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch(`/api/lists/${listId}/skus/${skuId}`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to add SKU to list');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            let errorMessage = 'Failed to add SKU to list';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 400) {
+                errorMessage = 'Invalid request. The SKU may already be in the list.';
+            } else if (response.status === 404) {
+                errorMessage = 'List or SKU not found';
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else if (responseData) {
+                errorMessage = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMessage);
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 
 export const removeSKUFromList = async (listId, skuId) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/lists/${listId}/skus/${skuId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch(`/api/lists/${listId}/skus/${skuId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        throw new Error('Failed to remove SKU from list');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            let errorMessage = 'Failed to remove SKU from list';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 404) {
+                errorMessage = 'List or SKU not found';
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 
 export const getListById = async (listId) => {
-    const response = await fetch(`${PRODUCT_BASE_URL}/lists/${listId}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
+    try {
+        const response = await fetch(`/api/lists/${listId}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
 
-    if (!response.ok) {
-        throw new Error('Failed to fetch list');
+        const responseData = await parseResponse(response);
+        
+        if (!response.ok) {
+            let errorMessage = 'Failed to fetch list';
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 404) {
+                errorMessage = 'List not found';
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            } else if (responseData) {
+                errorMessage = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMessage);
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error.message) throw error;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 

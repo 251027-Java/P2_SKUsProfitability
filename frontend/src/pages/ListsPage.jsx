@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllLists, createList, deleteList, removeSKUFromList, addSKUToList, getListById } from '../services/ListService';
-import { getAllSKUs } from '../services/SKUService';
+import { getAllLists, createList, deleteList, removeSKUFromList, addSKUToList, getListById, getAllSKUs } from '../services/ProductService';
 
 function ListsPage() {
     const [lists, setLists] = useState([]);

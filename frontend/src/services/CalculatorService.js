@@ -1,19 +1,43 @@
-const CALCULATOR_BASE_URL = '/calculation';
+import { getAuthHeaders, parseResponse } from '../utils/api';
 
 export const calculateFees = async (calculationData) => {
-    const response = await fetch(CALCULATOR_BASE_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(calculationData),
-    });
+    try {
+        const response = await fetch('/api/calculator/calculate', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(calculationData),
+        });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Calculation failed');
+        const responseData = await parseResponse(response);
+
+        if (!response.ok) {
+            let errorMessage = 'Calculation failed';
+            
+            if (typeof responseData === 'object' && responseData !== null) {
+                errorMessage = responseData.error || responseData.message || errorMessage;
+            } else if (typeof responseData === 'string') {
+                errorMessage = responseData || errorMessage;
+            }
+            
+            if (response.status === 401) {
+                errorMessage = 'Unauthorized. Please log in again.';
+                localStorage.removeItem('token');
+            } else if (response.status === 500) {
+                errorMessage = 'Server error. Please check if the backend is running.';
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error.message) {
+            throw error;
+        }
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
+        }
+        throw new Error('Network error. Please try again.');
     }
-
-    return await response.json();
 };
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { searchSKU } from '../services/SKUService';
+import { searchSKU } from '../services/ProductService';
+import { calculateFees } from '../services/CalculatorService';
 
 function Calculator() {
     const [formData, setFormData] = useState({
@@ -100,20 +101,7 @@ function Calculator() {
                 referralFeePercentage: formData.referralFeePercentage ? parseFloat(formData.referralFeePercentage) : null,
             };
 
-            const response = await fetch('/api/calculator/calculate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Calculation failed');
-            }
-
-            const data = await response.json();
+            const data = await calculateFees(requestBody);
             setResults(data);
         } catch (err) {
             setError(err.message || 'Failed to calculate fees');

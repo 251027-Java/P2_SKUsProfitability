@@ -42,7 +42,6 @@ eureka:
   instance:
     prefer-ip-address: true
 
-# Logging for debugging routes
 logging:
   level:
     org.spring: DEBUG

@@ -5,9 +5,14 @@ CREATE TABLE IF NOT EXISTS app_users (
     user_role VARCHAR(50) NOT NULL,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL
-);
+);;
 
-CREATE INDEX IF NOT EXISTS idx_app_users_email ON app_users(email);
+CREATE INDEX IF NOT EXISTS idx_app_users_email ON app_users(email);;
+
+-- Ensure default admin user exists
+INSERT INTO app_users (email, password, user_role, first_name, last_name)
+SELECT 'admin@test.com', 'password', 'ADMIN', 'Admin', 'User'
+WHERE NOT EXISTS (SELECT 1 FROM app_users WHERE email = 'admin@test.com');;
 
 CREATE TABLE IF NOT EXISTS skus (
     sku_id BIGSERIAL PRIMARY KEY,
@@ -30,7 +35,25 @@ CREATE TABLE IF NOT EXISTS skus (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     CONSTRAINT uk_skus_sku UNIQUE (sku)
-);
+);;
+
+-- Migration to add user_id if missing (fixes broken schema state)
+DO $$ 
+DECLARE
+    default_user_id BIGINT;
+BEGIN
+    SELECT user_id INTO default_user_id FROM app_users WHERE email = 'admin@test.com';
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'skus' AND column_name = 'user_id') THEN
+        ALTER TABLE skus ADD COLUMN user_id BIGINT;
+        
+        -- Update existing rows to default user
+        UPDATE skus SET user_id = default_user_id WHERE user_id IS NULL;
+        
+        -- Now make it NOT NULL
+        ALTER TABLE skus ALTER COLUMN user_id SET NOT NULL;
+    END IF;
+END $$;;
 
 DO $$ 
 DECLARE
@@ -44,13 +67,12 @@ BEGIN
     ) INTO table_exists;
     
     IF table_exists THEN
-        -- Add description column if it doesn't exist (as nullable first, will be set to NOT NULL later)
+        -- Add description column if it doesn't exist
         IF NOT EXISTS (
             SELECT 1 FROM information_schema.columns 
             WHERE table_name = 'skus' AND column_name = 'description'
         ) THEN
             ALTER TABLE skus ADD COLUMN description TEXT;
-            -- Set default value for any existing rows
             UPDATE skus SET description = 'No description provided' WHERE description IS NULL;
         END IF;
         
@@ -62,7 +84,7 @@ BEGIN
             ALTER TABLE skus ADD COLUMN size_classification VARCHAR(50);
         END IF;
     END IF;
-END $$;
+END $$;;
 
 DO $$ 
 BEGIN
@@ -72,13 +94,13 @@ BEGIN
     ) THEN
         ALTER TABLE skus ADD CONSTRAINT fk_skus_user FOREIGN KEY (user_id) REFERENCES app_users(user_id) ON DELETE CASCADE;
     END IF;
-END $$;
+END $$;;
 
-CREATE INDEX IF NOT EXISTS idx_skus_user_id ON skus(user_id);
-CREATE INDEX IF NOT EXISTS idx_skus_sku ON skus(sku);
-CREATE INDEX IF NOT EXISTS idx_skus_category ON skus(category);
-CREATE INDEX IF NOT EXISTS idx_skus_size_classification ON skus(size_classification);
-CREATE INDEX IF NOT EXISTS idx_skus_product_name ON skus(product_name);
+CREATE INDEX IF NOT EXISTS idx_skus_user_id ON skus(user_id);;
+CREATE INDEX IF NOT EXISTS idx_skus_sku ON skus(sku);;
+CREATE INDEX IF NOT EXISTS idx_skus_category ON skus(category);;
+CREATE INDEX IF NOT EXISTS idx_skus_size_classification ON skus(size_classification);;
+CREATE INDEX IF NOT EXISTS idx_skus_product_name ON skus(product_name);;
 
 -- Remove cost, target_roi, and max_cost columns if they exist
 DO $$ 
@@ -103,10 +125,9 @@ BEGIN
     ) THEN
         ALTER TABLE skus DROP COLUMN max_cost;
     END IF;
-END $$;
+END $$;;
 
 -- Handle existing data migration before adding constraints
--- Only run if the skus table already exists
 DO $$ 
 DECLARE
     table_exists BOOLEAN;
@@ -115,16 +136,14 @@ DECLARE
     null_description_count INTEGER;
     null_category_count INTEGER;
 BEGIN
-    -- Check if table exists
     SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_schema = 'public' 
         AND table_name = 'skus'
     ) INTO table_exists;
     
-    -- Only run migration if table exists
     IF table_exists THEN
-        -- Check for duplicate SKUs before adding unique constraint
+        -- Check for duplicate SKUs
         SELECT COUNT(*) INTO duplicate_count
         FROM (
             SELECT sku, COUNT(*) as cnt
@@ -134,49 +153,26 @@ BEGIN
         ) duplicates;
         
         IF duplicate_count > 0 THEN
-            RAISE EXCEPTION 'Cannot add unique constraint: Found % duplicate SKU(s). Please resolve duplicates before migration.', duplicate_count;
+            RAISE EXCEPTION 'Cannot add unique constraint: Found % duplicate SKU(s).', duplicate_count;
         END IF;
         
-        -- Check for NULL values in product_name
-        SELECT COUNT(*) INTO null_product_name_count
-        FROM skus
-        WHERE product_name IS NULL;
-        
-        -- Set default values for NULL product_name
+        -- Check for NULL values
+        SELECT COUNT(*) INTO null_product_name_count FROM skus WHERE product_name IS NULL;
         IF null_product_name_count > 0 THEN
-            UPDATE skus
-            SET product_name = 'Unnamed Product'
-            WHERE product_name IS NULL;
-            RAISE NOTICE 'Updated % record(s) with NULL product_name to default value', null_product_name_count;
+            UPDATE skus SET product_name = 'Unnamed Product' WHERE product_name IS NULL;
         END IF;
         
-        -- Check for NULL values in description
-        SELECT COUNT(*) INTO null_description_count
-        FROM skus
-        WHERE description IS NULL;
-        
-        -- Set default values for NULL description
+        SELECT COUNT(*) INTO null_description_count FROM skus WHERE description IS NULL;
         IF null_description_count > 0 THEN
-            UPDATE skus
-            SET description = 'No description provided'
-            WHERE description IS NULL;
-            RAISE NOTICE 'Updated % record(s) with NULL description to default value', null_description_count;
+            UPDATE skus SET description = 'No description provided' WHERE description IS NULL;
         END IF;
         
-        -- Check for NULL values in category
-        SELECT COUNT(*) INTO null_category_count
-        FROM skus
-        WHERE category IS NULL;
-        
-        -- Set default values for NULL category
+        SELECT COUNT(*) INTO null_category_count FROM skus WHERE category IS NULL;
         IF null_category_count > 0 THEN
-            UPDATE skus
-            SET category = 'Uncategorized'
-            WHERE category IS NULL;
-            RAISE NOTICE 'Updated % record(s) with NULL category to default value', null_category_count;
+            UPDATE skus SET category = 'Uncategorized' WHERE category IS NULL;
         END IF;
     END IF;
-END $$;
+END $$;;
 
 -- Add unique constraint on SKU if it doesn't exist
 DO $$ 
@@ -186,40 +182,33 @@ BEGIN
         WHERE constraint_name = 'uk_skus_sku' AND table_name = 'skus'
     ) THEN
         ALTER TABLE skus ADD CONSTRAINT uk_skus_sku UNIQUE (sku);
-        RAISE NOTICE 'Added unique constraint on sku column';
     END IF;
-END $$;
+END $$;;
 
 -- Update existing columns to be NOT NULL if they are currently nullable
 DO $$ 
 BEGIN
-    -- Make product_name NOT NULL
     IF EXISTS (
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'skus' AND column_name = 'product_name' AND is_nullable = 'YES'
     ) THEN
         ALTER TABLE skus ALTER COLUMN product_name SET NOT NULL;
-        RAISE NOTICE 'Set product_name column to NOT NULL';
     END IF;
     
-    -- Make description NOT NULL
     IF EXISTS (
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'skus' AND column_name = 'description' AND is_nullable = 'YES'
     ) THEN
         ALTER TABLE skus ALTER COLUMN description SET NOT NULL;
-        RAISE NOTICE 'Set description column to NOT NULL';
     END IF;
     
-    -- Make category NOT NULL
     IF EXISTS (
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'skus' AND column_name = 'category' AND is_nullable = 'YES'
     ) THEN
         ALTER TABLE skus ALTER COLUMN category SET NOT NULL;
-        RAISE NOTICE 'Set category column to NOT NULL';
     END IF;
-END $$;
+END $$;;
 
 CREATE TABLE IF NOT EXISTS lists (
     list_id BIGSERIAL PRIMARY KEY,
@@ -228,7 +217,7 @@ CREATE TABLE IF NOT EXISTS lists (
     description VARCHAR(500),
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
-);
+);;
 
 DO $$ 
 BEGIN
@@ -238,16 +227,16 @@ BEGIN
     ) THEN
         ALTER TABLE lists ADD CONSTRAINT fk_lists_user FOREIGN KEY (user_id) REFERENCES app_users(user_id) ON DELETE CASCADE;
     END IF;
-END $$;
+END $$;;
 
-CREATE INDEX IF NOT EXISTS idx_lists_user_id ON lists(user_id);
+CREATE INDEX IF NOT EXISTS idx_lists_user_id ON lists(user_id);;
 
 CREATE TABLE IF NOT EXISTS list_items (
     list_item_id BIGSERIAL PRIMARY KEY,
     list_id BIGINT NOT NULL,
     sku_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL
-);
+);;
 
 DO $$ 
 BEGIN
@@ -271,7 +260,7 @@ BEGIN
     ) THEN
         ALTER TABLE list_items ADD CONSTRAINT uk_list_items_unique UNIQUE (list_id, sku_id);
     END IF;
-END $$;
+END $$;;
 
-CREATE INDEX IF NOT EXISTS idx_list_items_list_id ON list_items(list_id);
-CREATE INDEX IF NOT EXISTS idx_list_items_sku_id ON list_items(sku_id);
+CREATE INDEX IF NOT EXISTS idx_list_items_list_id ON list_items(list_id);;
+CREATE INDEX IF NOT EXISTS idx_list_items_sku_id ON list_items(sku_id);;

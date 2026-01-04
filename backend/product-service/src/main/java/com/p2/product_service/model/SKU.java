@@ -1,6 +1,7 @@
 package com.p2.product_service.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,14 +12,12 @@ import java.time.LocalDateTime;
 @Table(name = "skus")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class SKU {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long skuId;
-
-//    @Column(nullable = false)
-//    private Long userId;
 
     @Column(nullable = false, unique = true, length = 50)
     private String sku;
@@ -65,6 +64,9 @@ public class SKU {
     @Column(precision = 10, scale = 2)
     private BigDecimal netProfit;
 
+    @Column(length = 500)
+    private String imageUrl;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -81,20 +83,4 @@ public class SKU {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    public SKU(String sku, String productName, String description,
-               BigDecimal length, BigDecimal width, BigDecimal height,
-               BigDecimal weight, String category, BigDecimal sellingPrice) {
-        this.sku = sku;
-        this.productName = productName;
-        this.description = description;
-        this.length = length;
-        this.width = width;
-        this.height = height;
-        this.weight = weight;
-        this.category = category;
-        this.sellingPrice = sellingPrice;
-    }
 }
-
-

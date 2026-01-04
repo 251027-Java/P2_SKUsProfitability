@@ -12,12 +12,14 @@ import com.p2.product_service.repository.SellerListItemRepository;
 import com.p2.product_service.repository.SellerListRepository;
 import com.p2.product_service.util.DataTransformUtil;
 import com.p2.product_service.util.ValidationUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class SellerListService {
     private final SellerListRepository listRepository;
     private final SellerListItemRepository listItemRepository;

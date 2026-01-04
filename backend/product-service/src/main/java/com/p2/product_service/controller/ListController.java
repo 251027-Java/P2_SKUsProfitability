@@ -19,26 +19,29 @@ public class ListController {
         this.listService = listService;
     }
 
-//    // Helper: Get User ID from Interceptor attributes
 //    private Long getUserId(HttpServletRequest request) {
-//        return (Long) request.getAttribute("userId");
+//        return 1L;
 //    }
 //
-//    // Helper: Check if the user is a SELLER
 //    private boolean isSeller(HttpServletRequest request) {
-//        String role = (String) request.getAttribute("userRole");
-//        return "SELLER".equalsIgnoreCase(role);
+//        return true;
 //    }
 
-    //Testing
     private Long getUserId(HttpServletRequest request) {
-        // Hardcode to 1L so the controller thinks a user is logged in
-        return 1L;
+        // We cast the attribute to Long because that's how it was stored by the Interceptor
+        Object userId = request.getAttribute("userId");
+        return userId != null ? (Long) userId : null;
     }
 
     private boolean isSeller(HttpServletRequest request) {
-        // Hardcode to true so you can access Seller-only endpoints
-        return true;
+        // We check the "role" attribute set by our security layer
+        String role = (String) request.getAttribute("userRole");
+        return "SELLER".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role);
+    }
+
+    private boolean isAdmin(HttpServletRequest request) {
+        String role = (String) request.getAttribute("userRole");
+        return "ADMIN".equalsIgnoreCase(role);
     }
 
     @GetMapping

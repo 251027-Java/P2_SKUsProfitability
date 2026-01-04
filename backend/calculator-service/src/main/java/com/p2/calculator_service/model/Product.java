@@ -1,0 +1,41 @@
+package com.p2.calculator_service.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "skus")
+@Data
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Product {
+
+    @Id
+    @Column(name = "sku_id")
+    @com.fasterxml.jackson.annotation.JsonProperty("skuId")
+    private Long id;
+
+    @Column(name = "sku", unique = true)
+    private String sku;
+
+
+    @Column(name = "product_name")
+    @com.fasterxml.jackson.annotation.JsonProperty("productName")
+    private String name;
+
+    private BigDecimal length;
+    private BigDecimal width;
+    private BigDecimal height;
+    private BigDecimal weight;
+
+    @Column(name = "selling_price")
+    private BigDecimal sellingPrice;
+
+    private String category;
+}

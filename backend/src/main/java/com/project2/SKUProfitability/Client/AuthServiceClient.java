@@ -6,6 +6,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -21,7 +25,7 @@ public class AuthServiceClient {
 
     public AuthServiceClient(
             RestTemplate restTemplate,
-            @Value("${auth.service.url:http://localhost:8082}") String authServiceUrl) {
+            @Value("${auth.service.url:http://localhost:8081}") String authServiceUrl) {
         this.restTemplate = restTemplate;
         this.authServiceUrl = authServiceUrl;
     }
@@ -34,8 +38,20 @@ public class AuthServiceClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<LoginRequest> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<AuthResponse> response = restTemplate.postForEntity(url, entity, AuthResponse.class);
-        return response.getBody();
+        try {
+            ResponseEntity<AuthResponse> response = restTemplate.postForEntity(url, entity, AuthResponse.class);
+            return response.getBody();
+        } catch (ResourceAccessException e) {
+            throw new RuntimeException("Cannot connect to auth-service at " + authServiceUrl + ". Please ensure auth-service is running on port 8081.", e);
+        } catch (HttpClientErrorException e) {
+            // Pass through HTTP client errors (4xx) with their original message
+            throw new RuntimeException("Auth service error: " + e.getResponseBodyAsString(), e);
+        } catch (HttpServerErrorException e) {
+            // Pass through HTTP server errors (5xx) with their original message
+            throw new RuntimeException("Auth service error: " + e.getResponseBodyAsString(), e);
+        } catch (RestClientException e) {
+            throw new RuntimeException("Error communicating with auth-service: " + e.getMessage(), e);
+        }
     }
 
     public AuthResponse register(String email, String password, String firstName, String lastName) {
@@ -46,8 +62,20 @@ public class AuthServiceClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<RegisterRequest> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<AuthResponse> response = restTemplate.postForEntity(url, entity, AuthResponse.class);
-        return response.getBody();
+        try {
+            ResponseEntity<AuthResponse> response = restTemplate.postForEntity(url, entity, AuthResponse.class);
+            return response.getBody();
+        } catch (ResourceAccessException e) {
+            throw new RuntimeException("Cannot connect to auth-service at " + authServiceUrl + ". Please ensure auth-service is running on port 8081.", e);
+        } catch (HttpClientErrorException e) {
+            // Pass through HTTP client errors (4xx) with their original message
+            throw new RuntimeException("Auth service error: " + e.getResponseBodyAsString(), e);
+        } catch (HttpServerErrorException e) {
+            // Pass through HTTP server errors (5xx) with their original message
+            throw new RuntimeException("Auth service error: " + e.getResponseBodyAsString(), e);
+        } catch (RestClientException e) {
+            throw new RuntimeException("Error communicating with auth-service: " + e.getMessage(), e);
+        }
     }
 
     public boolean isServiceHealthy() {

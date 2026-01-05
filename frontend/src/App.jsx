@@ -16,17 +16,11 @@ function ProtectedRoute({ children }) {
     }, []);
 
     if (!authChecked) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-                <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
-                    <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
-                </div>
-            </div>
-        );
+        return <div className="text-white text-center mt-20">Loading...</div>;
     }
 
-    return authenticated ? children : <Navigate to="/api/auth/login" replace />;
+    // Redirect to the UI path "/login", NOT the API path
+    return authenticated ? children : <Navigate to="/login" replace />;
 }
 
 function App() {
@@ -34,35 +28,34 @@ function App() {
         <Router>
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 transition-colors duration-200">
                 <Routes>
+                    {/* UI ROUTES (Clean URLs for the user) */}
                     <Route path="/login" element={<LoginPage />} />
-                    <Route path="/api/auth/login" element={<LoginPage />} />
-                    <Route path="/api/auth/register" element={<LoginPage />} />
-                    <Route 
-                        path="/" 
-                        element={<Navigate to="/api/auth/login" replace />}
-                    />
+                    
+                    {/* Redirect root to login */}
+                    <Route path="/" element={<Navigate to="/login" replace />} />
+
                     <Route 
                         path="/dashboard" 
                         element={
                             <ProtectedRoute>
-                                <>
-                                    <Navbar />
-                                    <HomePage />
-                                </>
+                                <Navbar />
+                                <HomePage />
                             </ProtectedRoute>
                         } 
                     />
+                    
                     <Route 
                         path="/sku/:skuId" 
                         element={
                             <ProtectedRoute>
-                                <>
-                                    <Navbar />
-                                    <SKUDetailPage />
-                                </>
+                                <Navbar />
+                                <SKUDetailPage />
                             </ProtectedRoute>
                         } 
                     />
+
+                    {/* Catch-all: Redirect unknown routes to login */}
+                    <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </div>
         </Router>

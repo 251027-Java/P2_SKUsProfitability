@@ -2,7 +2,7 @@ import { getAuthHeaders, parseResponse } from '../utils/api';
 
 export const getAllSKUs = async () => {
     try {
-        const response = await fetch('/api/skus', {
+        const response = await fetch('/product/api/skus', {
             method: 'GET',
             headers: getAuthHeaders(),
         });
@@ -36,7 +36,7 @@ export const getAllSKUs = async () => {
 
 export const createSKU = async (skuData) => {
     try {
-        const response = await fetch('/api/skus', {
+        const response = await fetch('/product/api/skus', {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(skuData),
@@ -73,7 +73,7 @@ export const createSKU = async (skuData) => {
 
 export const deleteSKU = async (skuId) => {
     try {
-        const response = await fetch(`/api/skus/${skuId}`, {
+        const response = await fetch(`/product/api/skus/${skuId}`, {
             method: 'DELETE',
             headers: getAuthHeaders(),
         });
@@ -108,7 +108,7 @@ export const importSKUsFromCSV = async (file) => {
         const headers = getAuthHeaders();
         delete headers['Content-Type'];
 
-        const response = await fetch('/api/skus/import', {
+        const response = await fetch('/product/api/skus/import', {
             method: 'POST',
             headers: headers,
             body: formData,
@@ -153,7 +153,7 @@ export const importSKUsFromCSV = async (file) => {
 
 export const getSKUById = async (skuId) => {
     try {
-        const response = await fetch(`/api/skus/${skuId}`, {
+        const response = await fetch(`/product/api/skus/${skuId}`, {
             method: 'GET',
             headers: getAuthHeaders(),
         });
@@ -191,7 +191,7 @@ export const getSKUById = async (skuId) => {
 
 export const searchSKU = async (searchTerm) => {
     try {
-        const response = await fetch(`/api/skus/search?q=${encodeURIComponent(searchTerm)}`, {
+        const response = await fetch(`/product/api/skus/search?q=${encodeURIComponent(searchTerm)}`, {
             method: 'GET',
             headers: getAuthHeaders(),
         });
@@ -228,7 +228,7 @@ export const searchSKU = async (searchTerm) => {
 
 export const getAllLists = async () => {
     try {
-        const response = await fetch('/api/lists', {
+        const response = await fetch('/product/api/lists', {
             method: 'GET',
             headers: getAuthHeaders(),
         });
@@ -262,7 +262,7 @@ export const getAllLists = async () => {
 
 export const createList = async (listData) => {
     try {
-        const response = await fetch('/api/lists', {
+        const response = await fetch('/product/api/lists', {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(listData),
@@ -299,7 +299,7 @@ export const createList = async (listData) => {
 
 export const deleteList = async (listId) => {
     try {
-        const response = await fetch(`/api/lists/${listId}`, {
+        const response = await fetch(`/product/api/lists/${listId}`, {
             method: 'DELETE',
             headers: getAuthHeaders(),
         });
@@ -329,7 +329,7 @@ export const deleteList = async (listId) => {
 
 export const addSKUToList = async (listId, skuId) => {
     try {
-        const response = await fetch(`/api/lists/${listId}/skus/${skuId}`, {
+        const response = await fetch(`/product/api/lists/${listId}/skus/${skuId}`, {
             method: 'POST',
             headers: getAuthHeaders(),
         });
@@ -367,7 +367,7 @@ export const addSKUToList = async (listId, skuId) => {
 
 export const removeSKUFromList = async (listId, skuId) => {
     try {
-        const response = await fetch(`/api/lists/${listId}/skus/${skuId}`, {
+        const response = await fetch(`/product/api/lists/${listId}/skus/${skuId}`, {
             method: 'DELETE',
             headers: getAuthHeaders(),
         });
@@ -401,7 +401,7 @@ export const removeSKUFromList = async (listId, skuId) => {
 
 export const getListById = async (listId) => {
     try {
-        const response = await fetch(`/api/lists/${listId}`, {
+        const response = await fetch(`/product/api/lists/${listId}`, {
             method: 'GET',
             headers: getAuthHeaders(),
         });

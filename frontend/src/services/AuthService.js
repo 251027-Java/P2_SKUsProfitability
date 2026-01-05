@@ -1,6 +1,6 @@
 export const login = async (email, password) => {
     try {
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch('/auth/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export const login = async (email, password) => {
 
 export const register = async (registerData) => {
     try {
-        const response = await fetch('/api/auth/register', {
+        const response = await fetch('/auth/api/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

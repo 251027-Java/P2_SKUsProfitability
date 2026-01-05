@@ -124,9 +124,9 @@ public class SKUController {
 
     @PostMapping("/add-category")
     public ResponseEntity<?> addProductsByCategory(@RequestBody BrightDataDiscoverByBestSellerRequest request){
-        skuService.addSkusByCategory(request);
+        List<SKU> skus = skuService.addSkusByCategory(request);
 
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok(skus);
     }
 
     @GetMapping("/get-all")

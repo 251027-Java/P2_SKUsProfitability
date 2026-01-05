@@ -1,7 +1,7 @@
 package com.p2.product_service.mapper;
 
 import com.p2.product_service.model.SKU;
-import com.p2.product_service.model.response.DataBrightSkuResponse;
+import com.p2.product_service.model.response.BrightDataSkuResponse;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -13,17 +13,31 @@ import java.util.regex.Pattern;
 @Component
 public class DataBrightSkuToProductServiceSkuMapper {
 
-    public SKU dataBrightSkuToProductServiceSku(DataBrightSkuResponse response){
+    public SKU dataBrightSkuToProductServiceSku(BrightDataSkuResponse response){
 
         SKU sku = new SKU();
+        sku.setSku(response.getAsin());
         sku.setProductName(response.getTitle());
         sku.setSellingPrice(BigDecimal.valueOf(response.getFinalPrice()));
         sku.setDescription(response.getDescription());
         sku.setImageUrl(response.getImageUrl());
-        sku.setWeight(BigDecimal.valueOf(response.getItemWeight()));
+        parseWeight(response.getItemWeight(), sku);
         parseDimensions(response.getProductDimensions(), sku);
         sku.setCategory(response.getRootBsCategory());
         return sku;
+    }
+
+    private void parseWeight(String itemWeight, SKU sku){
+        Pattern pattern = Pattern.compile("\\d+(?:\\.\\d+)?");
+        Matcher matcher = pattern.matcher(itemWeight);
+
+        if (matcher.find()) {
+            sku.setWeight(BigDecimal.valueOf(Double.parseDouble(matcher.group())));
+        }
+        else{
+            sku.setWeight(BigDecimal.ZERO);
+        }
+
     }
 
 

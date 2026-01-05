@@ -1,28 +1,20 @@
 package com.p2.product_service.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.exception.ResourceNotFoundException;
 import com.p2.product_service.mapper.DataBrightSkuToProductServiceSkuMapper;
 import com.p2.product_service.model.SKU;
 import com.p2.product_service.model.request.BrightData.BrightDataDiscoverByBestSellerRequest;
-import com.p2.product_service.model.response.DataBrightCategoryResponse;
+import com.p2.product_service.model.response.BrightDataCategoryResponse;
 import com.p2.product_service.repository.SKURepository;
 import com.p2.product_service.util.DataTransformUtil;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -35,21 +27,17 @@ public class SKUService {
 
     private final DataBrightSkuToProductServiceSkuMapper skuMapper;
 
-    public void addSkusByCategory(BrightDataDiscoverByBestSellerRequest request) throws RuntimeException {
+    public List<SKU> addSkusByCategory(BrightDataDiscoverByBestSellerRequest request) throws RuntimeException {
 
-           DataBrightCategoryResponse dataBrightCategoryResponse = brightDataService.getBestSellersByCategory(request);
+           BrightDataCategoryResponse brightDataCategoryResponse = brightDataService.getBestSellersByCategory(request);
 
-            List<SKU> mappedSkus = dataBrightCategoryResponse
+            return brightDataCategoryResponse
                                     .getSkuResponseList()
                                     .stream()
                                     .map(skuMapper::dataBrightSkuToProductServiceSku)
                                     .toList();
 
-            skuRepository.saveAll(mappedSkus);
-
-    }
-
-    public void addSku(){
+//            skuRepository.saveAll(mappedSkus);
 
     }
 

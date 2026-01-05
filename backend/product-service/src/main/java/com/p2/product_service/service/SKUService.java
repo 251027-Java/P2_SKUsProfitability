@@ -1,40 +1,22 @@
 package com.p2.product_service.service;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.p2.product_service.dto.SKUCreateDTO;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.exception.ResourceNotFoundException;
 import com.p2.product_service.model.SKU;
-import com.p2.product_service.model.request.DataBrightRequest;
-import com.p2.product_service.model.request.ProductDetails;
-import com.p2.product_service.model.request.ProductRequest;
+import com.p2.product_service.model.request.BrightData.BrightDataCollectByUrlRequest;
+import com.p2.product_service.model.request.BrightData.BrightDataProductDetailsRequest;
 import com.p2.product_service.model.response.DataBrightResponse;
 import com.p2.product_service.repository.SKURepository;
 import com.p2.product_service.util.DataTransformUtil;
-import com.p2.product_service.util.ValidationUtil;
-import lombok.AllArgsConstructor;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.http.protocol.HTTP;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
@@ -57,19 +39,19 @@ public class SKUService {
     private String apiKey;
 
     public List<SKU> getSKUs() {
-//        List<ProductDetails> productDetails = new ArrayList<>();
+//        List<BrightDataProductDetailsRequest> brightDataProductDetailRequests = new ArrayList<>();
 //        urls.forEach(url -> {
-//            ProductDetails productDetail = new ProductDetails();
+//            BrightDataProductDetailsRequest productDetail = new BrightDataProductDetailsRequest();
 //            productDetail.setUrl(url);
-//            productDetails.add(productDetail);
+//            brightDataProductDetailRequests.add(productDetail);
 //        });
 //
-//        DataBrightRequest dataBrightRequest = new DataBrightRequest();
-//        dataBrightRequest.setInput(productDetails);
+//        BrightDataCollectByUrlRequest brightDataCollectByUrlRequest = new BrightDataCollectByUrlRequest();
+//        brightDataCollectByUrlRequest.setInput(brightDataProductDetailRequests);
 //
 //        ObjectMapper mapper = new ObjectMapper();
 //
-//        String requestBody = mapper.writeValueAsString(dataBrightRequest);
+//        String requestBody = mapper.writeValueAsString(brightDataCollectByUrlRequest);
 //
 //        HttpRequest request = HttpRequest.newBuilder()
 //                .uri(new URI(brightDataApiUrl))
@@ -87,83 +69,77 @@ public class SKUService {
 //        sku.setDescription(dbResponse.getDescription());
 //        sku.setImageUrl(dbResponse.getImageUrl());
 //        sku.setWeight(BigDecimal.valueOf(dbResponse.getItemWeight()));
-//
-//
-//        return new SKU();
-    return skuRepository.findAll();
+        //
+        //
+        // return new SKU();
+        return skuRepository.findAll();
     }
 
-//    public SKUDTO createSKU(SKUCreateDTO dto) {
-//        ValidationUtil.validateSKUFormat(dto.sku());
-//        ValidationUtil.validateProductName(dto.productName());
-//        ValidationUtil.validateRequired(dto.description(), "Description");
-//        ValidationUtil.validateCategory(dto.category());
-//        ValidationUtil.validateDimension(dto.length(), "Length");
-//        ValidationUtil.validateDimension(dto.width(), "Width");
-//        ValidationUtil.validateDimension(dto.height(), "Height");
-//        ValidationUtil.validateWeight(dto.weight());
-//        ValidationUtil.validatePrice(dto.sellingPrice(), "Selling Price");
-//
-//        if (skuRepository.existsBySku(dto.sku())) {
-//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-//        }
-//
-//        SKU sku = new SKU(
-//                dto.sku(),
-//                dto.productName(),
-//                dto.description(),
-//                dto.length(),
-//                dto.width(),
-//                dto.height(),
-//                dto.weight(),
-//                dto.category(),
-//                dto.sellingPrice()
-//        );
-//
-//        calculateAndSetFees(sku);
-//
-//        try {
-//            SKU savedSku = skuRepository.save(sku);
-//            return DataTransformUtil.toSKUDTO(savedSku);
-//        } catch (DataIntegrityViolationException e) {
-//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-//        }
-//    }
+    // public SKUDTO createSKU(SKUCreateDTO dto) {
+    // ValidationUtil.validateSKUFormat(dto.sku());
+    // ValidationUtil.validateProductName(dto.productName());
+    // ValidationUtil.validateRequired(dto.description(), "Description");
+    // ValidationUtil.validateCategory(dto.category());
+    // ValidationUtil.validateDimension(dto.length(), "Length");
+    // ValidationUtil.validateDimension(dto.width(), "Width");
+    // ValidationUtil.validateDimension(dto.height(), "Height");
+    // ValidationUtil.validateWeight(dto.weight());
+    // ValidationUtil.validatePrice(dto.sellingPrice(), "Selling Price");
+    //
+    // if (skuRepository.existsBySku(dto.sku())) {
+    // throw new IllegalArgumentException("SKU already exists: " + dto.sku());
+    // }
+    //
+    // SKU sku = new SKU(
+    // dto.sku(),
+    // dto.productName(),
+    // dto.description(),
+    // dto.length(),
+    // dto.width(),
+    // dto.height(),
+    // dto.weight(),
+    // dto.category(),
+    // dto.sellingPrice()
+    // );
+    //
+    // calculateAndSetFees(sku);
+    //
+    // try {
+    // SKU savedSku = skuRepository.save(sku);
+    // return DataTransformUtil.toSKUDTO(savedSku);
+    // } catch (DataIntegrityViolationException e) {
+    // throw new IllegalArgumentException("SKU already exists: " + dto.sku());
+    // }
+    // }
 
     private void calculateAndSetFees(SKU sku) {
         if (sku.getLength() != null && sku.getWidth() != null &&
                 sku.getHeight() != null && sku.getWeight() != null) {
             String sizeClassification = calculationService.determineSizeTier(
-                    sku.getLength(), sku.getWidth(), sku.getHeight(), sku.getWeight()
-            );
+                    sku.getLength(), sku.getWidth(), sku.getHeight(), sku.getWeight());
             sku.setSizeClassification(sizeClassification);
         } else {
             sku.setSizeClassification(null);
         }
 
         BigDecimal fbaFee = calculationService.calculateFBAFulfillmentFee(
-                sku.getLength(), sku.getWidth(), sku.getHeight(), sku.getWeight()
-        );
+                sku.getLength(), sku.getWidth(), sku.getHeight(), sku.getWeight());
         sku.setFbaFulfillmentFee(fbaFee);
 
         BigDecimal referralFee = calculationService.calculateReferralFee(
-                sku.getSellingPrice(), sku.getCategory()
-        );
+                sku.getSellingPrice(), sku.getCategory());
         sku.setReferralFee(referralFee);
 
         BigDecimal storageFee = calculationService.calculateStorageFee(
-                sku.getLength(), sku.getWidth(), sku.getHeight()
-        );
+                sku.getLength(), sku.getWidth(), sku.getHeight());
         sku.setStorageFee(storageFee);
 
         BigDecimal totalFees = calculationService.calculateTotalFees(
-                fbaFee, referralFee, storageFee
-        );
+                fbaFee, referralFee, storageFee);
         sku.setTotalFees(totalFees);
 
         BigDecimal netProfit = calculationService.calculateNetProfit(
-                sku.getSellingPrice(), totalFees
-        );
+                sku.getSellingPrice(), totalFees);
         sku.setNetProfit(netProfit);
     }
 
@@ -194,5 +170,3 @@ public class SKUService {
         skuRepository.delete(sku);
     }
 }
-
-

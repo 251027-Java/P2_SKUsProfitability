@@ -2,7 +2,8 @@ package com.p2.product_service.controller;
 
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.model.SKU;
-import com.p2.product_service.model.request.DataBrightRequest;
+import com.p2.product_service.model.request.BrightData.BrightDataCollectByUrlRequest;
+import com.p2.product_service.model.request.BrightData.BrightDataDiscoverByBestSellerRequest;
 import com.p2.product_service.service.SKUService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -34,16 +35,16 @@ public class SKUController {
         return "ADMIN".equalsIgnoreCase(role);
     }
 
-//    // Testing
-//    private Long getUserId(HttpServletRequest request) {
-//        // Hardcode to 1L so the controller thinks a user is logged in
-//        return 1L;
-//    }
-//
-//    private boolean isAdmin(HttpServletRequest request) {
-//        // Always act like an admin for now
-//        return true;
-//    }
+    // // Testing
+    // private Long getUserId(HttpServletRequest request) {
+    // // Hardcode to 1L so the controller thinks a user is logged in
+    // return 1L;
+    // }
+    //
+    // private boolean isAdmin(HttpServletRequest request) {
+    // // Always act like an admin for now
+    // return true;
+    // }
 
     // --- Public/Shared Endpoints (Requires valid login, any role) ---
 
@@ -100,8 +101,13 @@ public class SKUController {
         return ResponseEntity.ok("Sent Kafka message for SKU: " + sku);
     }
 
+    @PostMapping("/add-category")
+    public ResponseEntity<?> addProductsByCategory(@RequestBody BrightDataDiscoverByBestSellerRequest request){
+        return ResponseEntity.ok("");
+    }
+
     @GetMapping()
-    public ResponseEntity<?> getProductDetails(@RequestBody DataBrightRequest request){
+    public ResponseEntity<?> getProductDetails(@RequestBody BrightDataCollectByUrlRequest request) {
         List<SKU> skus = skuService.getSKUs();
         return ResponseEntity.ok(skus);
     }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getSKUById } from '../services/SKUService';
+import { getSKUById } from '../services/ProductService';
 
 function SKUDetailPage() {
     const { skuId } = useParams();
@@ -24,7 +24,7 @@ function SKUDetailPage() {
                 setError('Your session has expired. Please log in again.');
                 localStorage.removeItem('token');
                 setTimeout(() => {
-                    window.location.href = '/login';
+                    window.location.href = '/api/auth/login';
                 }, 2000);
             } else {
                 setError('Failed to load SKU details. Please try again.');
@@ -60,7 +60,7 @@ function SKUDetailPage() {
                         </div>
                     </div>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('/dashboard')}
                         className="mt-4 px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors"
                     >
                         Back to Dashboard
@@ -78,7 +78,7 @@ function SKUDetailPage() {
                         <p className="font-medium">SKU not found</p>
                     </div>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('/dashboard')}
                         className="mt-4 px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors"
                     >
                         Back to Dashboard
@@ -97,7 +97,7 @@ function SKUDetailPage() {
             <div className="p-8">
                 <div className="mb-6 flex items-center justify-between">
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('/dashboard')}
                         className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

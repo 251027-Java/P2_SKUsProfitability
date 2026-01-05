@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { searchSKU } from '../services/SKUService';
+import { searchSKU } from '../services/ProductService';
 
 function SKUForm({ onSave, onCancel, initialData = null }) {
     const [formData, setFormData] = useState({

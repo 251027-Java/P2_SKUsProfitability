@@ -1,22 +1,15 @@
 package com.p2.product_service.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.exception.ResourceNotFoundException;
 import com.p2.product_service.model.SKU;
-import com.p2.product_service.model.request.BrightData.BrightDataCollectByUrlRequest;
-import com.p2.product_service.model.request.BrightData.BrightDataProductDetailsRequest;
-import com.p2.product_service.model.response.DataBrightResponse;
 import com.p2.product_service.repository.SKURepository;
 import com.p2.product_service.util.DataTransformUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.*;
 
 @Service
@@ -75,43 +68,6 @@ public class SKUService {
         return skuRepository.findAll();
     }
 
-    // public SKUDTO createSKU(SKUCreateDTO dto) {
-    // ValidationUtil.validateSKUFormat(dto.sku());
-    // ValidationUtil.validateProductName(dto.productName());
-    // ValidationUtil.validateRequired(dto.description(), "Description");
-    // ValidationUtil.validateCategory(dto.category());
-    // ValidationUtil.validateDimension(dto.length(), "Length");
-    // ValidationUtil.validateDimension(dto.width(), "Width");
-    // ValidationUtil.validateDimension(dto.height(), "Height");
-    // ValidationUtil.validateWeight(dto.weight());
-    // ValidationUtil.validatePrice(dto.sellingPrice(), "Selling Price");
-    //
-    // if (skuRepository.existsBySku(dto.sku())) {
-    // throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-    // }
-    //
-    // SKU sku = new SKU(
-    // dto.sku(),
-    // dto.productName(),
-    // dto.description(),
-    // dto.length(),
-    // dto.width(),
-    // dto.height(),
-    // dto.weight(),
-    // dto.category(),
-    // dto.sellingPrice()
-    // );
-    //
-    // calculateAndSetFees(sku);
-    //
-    // try {
-    // SKU savedSku = skuRepository.save(sku);
-    // return DataTransformUtil.toSKUDTO(savedSku);
-    // } catch (DataIntegrityViolationException e) {
-    // throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-    // }
-    // }
-
     private void calculateAndSetFees(SKU sku) {
         if (sku.getLength() != null && sku.getWidth() != null &&
                 sku.getHeight() != null && sku.getWeight() != null) {
@@ -144,7 +100,6 @@ public class SKUService {
     }
 
     public List<SKUDTO> getAllSKUs() {
-        // skuRepository.findAll() returns every product in the database
         return DataTransformUtil.toSKUDTOList(skuRepository.findAll());
     }
 

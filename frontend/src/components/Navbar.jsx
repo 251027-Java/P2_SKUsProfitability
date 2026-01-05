@@ -6,11 +6,11 @@ function Navbar() {
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate('/api/auth/login');
     };
 
     const handleDashboardClick = () => {
-        navigate('/', { replace: true });
+        navigate('/dashboard', { replace: true });
         window.dispatchEvent(new CustomEvent('dashboard-navigate'));
     };
 

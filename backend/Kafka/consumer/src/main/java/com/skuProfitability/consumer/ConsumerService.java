@@ -20,7 +20,6 @@ public class ConsumerService {
         return receivedMessages;
     }
 
-    // method to clear messages (DELETE endpoint)
     public void clearMessages() {
         receivedMessages.clear();
     }

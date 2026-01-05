@@ -21,8 +21,17 @@ public class AuthController {
     public AuthServiceClient.AuthResponse login(@RequestBody AuthRequest request) {
         try {
             return authServiceClient.login(request.email(), request.password());
+        } catch (RuntimeException e) {
+            String message = e.getMessage();
+            if (message != null && message.contains("Cannot connect to auth-service")) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message);
+            }
+            if (message != null && (message.contains("User not found") || message.contains("Invalid password"))) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, message);
+            }
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Login failed: " + message);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login failed: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Login failed: " + e.getMessage());
         }
     }
 
@@ -35,8 +44,20 @@ public class AuthController {
                     request.firstName(),
                     request.lastName()
             );
+        } catch (RuntimeException e) {
+            String message = e.getMessage();
+            if (message != null && message.contains("Cannot connect to auth-service")) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message);
+            }
+            if (message != null && message.contains("Email already in use")) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, message);
+            }
+            if (message != null && message.contains("Auth service error")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+            }
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Registration failed: " + message);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Registration failed: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Registration failed: " + e.getMessage());
         }
     }
 

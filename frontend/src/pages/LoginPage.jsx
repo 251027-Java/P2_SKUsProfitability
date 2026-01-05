@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { login, register } from '../services/AuthService';
 
 function LoginPage() {
-    const [isRegistering, setIsRegistering] = useState(false);
+    const location = useLocation();
+    const isRegisterRoute = location.pathname === '/api/auth/register';
+    const [isRegistering, setIsRegistering] = useState(isRegisterRoute);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
@@ -21,7 +23,7 @@ function LoginPage() {
         try {
             const token = await login(email, password);
             localStorage.setItem('token', token);
-            navigate('/');
+            navigate('/dashboard');
         } catch (err) {
             setError(err.message || 'Login failed. Please check your credentials.');
         } finally {
@@ -58,13 +60,23 @@ function LoginPage() {
                 lastName
             });
             localStorage.setItem('token', token);
-            navigate('/');
+            navigate('/dashboard');
         } catch (err) {
             setError(err.message || 'Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        setIsRegistering(isRegisterRoute);
+        setError('');
+        setEmail('');
+        setPassword('');
+        setFirstName('');
+        setLastName('');
+        setConfirmPassword('');
+    }, [isRegisterRoute]);
 
     const toggleMode = () => {
         setIsRegistering(!isRegistering);
@@ -74,6 +86,11 @@ function LoginPage() {
         setFirstName('');
         setLastName('');
         setConfirmPassword('');
+        if (isRegistering) {
+            navigate('/api/auth/login', { replace: true });
+        } else {
+            navigate('/api/auth/register', { replace: true });
+        }
     };
 
     return (

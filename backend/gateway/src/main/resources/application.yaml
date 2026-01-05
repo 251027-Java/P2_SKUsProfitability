@@ -28,7 +28,7 @@ spring:
             - id: calculatorservice-route
               uri: lb://CALCULATOR-SERVICE
               predicates:
-                - Path=/calculation/**          # Match all paths starting with /myclient/
+                - Path=/calculator/**          # Match all paths starting with /myclient/
               filters:
                 - StripPrefix=1
 
@@ -42,7 +42,6 @@ eureka:
   instance:
     prefer-ip-address: true
 
-# Logging for debugging routes
 logging:
   level:
     org.spring: DEBUG

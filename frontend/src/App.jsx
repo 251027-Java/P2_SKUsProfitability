@@ -26,7 +26,7 @@ function ProtectedRoute({ children }) {
         );
     }
 
-    return authenticated ? children : <Navigate to="/login" replace />;
+    return authenticated ? children : <Navigate to="/api/auth/login" replace />;
 }
 
 function App() {
@@ -35,8 +35,14 @@ function App() {
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 transition-colors duration-200">
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/api/auth/login" element={<LoginPage />} />
+                    <Route path="/api/auth/register" element={<LoginPage />} />
                     <Route 
                         path="/" 
+                        element={<Navigate to="/api/auth/login" replace />}
+                    />
+                    <Route 
+                        path="/dashboard" 
                         element={
                             <ProtectedRoute>
                                 <>

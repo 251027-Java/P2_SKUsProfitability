@@ -1,16 +1,26 @@
 package com.p2.product_service.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.model.SKU;
 import com.p2.product_service.model.request.BrightData.BrightDataCollectByUrlRequest;
 import com.p2.product_service.model.request.BrightData.BrightDataDiscoverByBestSellerRequest;
 import com.p2.product_service.service.SKUService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/skus")
@@ -18,13 +28,15 @@ public class SKUController {
 
     private final SKUService skuService;
     private final com.p2.product_service.service.kafka.ProducerService producerService;
+    private final SKURepository skuRpo;
+    private final ObjectMapper objectMapper;
 
-    public SKUController(SKUService skuService, com.p2.product_service.service.kafka.ProducerService producerService) {
+    public SKUController(SKUService skuService, com.p2.product_service.service.kafka.ProducerService producerService, SKURepository skuRpo, ObjectMapper objectMapper) {
         this.skuService = skuService;
         this.producerService = producerService;
+        this.skuRpo = skuRpo;
+        this.objectMapper = objectMapper;
     }
-
-    // --- Security Helpers ---
 
     private Long getUserId(HttpServletRequest request) {
         return (Long) request.getAttribute("userId");
@@ -34,19 +46,6 @@ public class SKUController {
         String role = (String) request.getAttribute("userRole");
         return "ADMIN".equalsIgnoreCase(role);
     }
-
-    // // Testing
-    // private Long getUserId(HttpServletRequest request) {
-    // // Hardcode to 1L so the controller thinks a user is logged in
-    // return 1L;
-    // }
-    //
-    // private boolean isAdmin(HttpServletRequest request) {
-    // // Always act like an admin for now
-    // return true;
-    // }
-
-    // --- Public/Shared Endpoints (Requires valid login, any role) ---
 
     @GetMapping
     public ResponseEntity<List<SKUDTO>> getAllSKUs(HttpServletRequest request) {
@@ -99,6 +98,27 @@ public class SKUController {
 
         producerService.sendMessage("sku-updates", sku);
         return ResponseEntity.ok("Sent Kafka message for SKU: " + sku);
+    }
+
+    @PostMapping("/sync")
+    public ResponseEntity<String> syncProduct(@RequestParam("sku") String sku, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required");
+        }
+
+        SKU product = skuRpo.findBySku(sku)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + sku));
+
+        try {
+            String jsonProduct = objectMapper.writeValueAsString(product);
+
+            producerService.sendMessage("sku-updates", jsonProduct);
+
+            return ResponseEntity.ok("Successfully synced " + sku);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Sync failed: " + e.getMessage());
+        }
     }
 
     @PostMapping("/add-category")

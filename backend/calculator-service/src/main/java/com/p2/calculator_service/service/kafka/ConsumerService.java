@@ -1,5 +1,6 @@
 package com.p2.calculator_service.service.kafka;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.calculator_service.model.Calculation;
 import com.p2.calculator_service.model.Product;
 import com.p2.calculator_service.repository.CalculationRepository;
@@ -27,37 +28,18 @@ public class ConsumerService {
 
     @KafkaListener(topics = "sku-updates", groupId = "calculator-group")
     public void listen(String message) {
-        System.out.println("Calculator Service received message for SKU: " + message);
-
         try {
-            // Assume message is the SKU string
-            String sku = message.trim();
+            ObjectMapper objectMapper = new ObjectMapper();
+            Product productFromKafka = objectMapper.readValue(message, Product.class);
 
-            // 1. Fetch Product Data
-            Optional<Product> productOpt = productRepository.findBySku(sku);
+            System.out.println("Received sync for SKU: " + productFromKafka.getSku());
 
-            if (productOpt.isPresent()) {
-                Product product = productOpt.get();
-                System.out.println("Found product: " + product.getName());
+            productRepository.save(productFromKafka);
 
-                // 2. Run Calculation
-                Calculation calculation = calculatorService.calculateForProduct(product);
+            System.out.println("Successfully saved local copy: " + productFromKafka.getSku());
 
-                if (calculation != null) {
-                    // Set User ID (placeholder or logic needed if part of message)
-                    // For now, setting to a system default or handling null in DB
-                    calculation.setUserId(1L); // Default system user
-
-                    // 3. Save Results
-                    calculationRepository.save(calculation);
-                    System.out.println("Saved calculation for SKU: " + sku);
-                }
-            } else {
-                System.out.println("Product not found for SKU: " + sku);
-            }
         } catch (Exception e) {
-            System.err.println("Error processing message: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Failed to parse or save product: " + e.getMessage());
         }
     }
 }

@@ -20,11 +20,18 @@ public class ListController {
     }
 
     private Long getUserId(HttpServletRequest request) {
-        return 1L;
+        Object userId = request.getAttribute("userId");
+        return userId != null ? (Long) userId : null;
     }
 
     private boolean isSeller(HttpServletRequest request) {
-        return true;
+        String role = (String) request.getAttribute("userRole");
+        return "SELLER".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role);
+    }
+
+    private boolean isAdmin(HttpServletRequest request) {
+        String role = (String) request.getAttribute("userRole");
+        return "ADMIN".equalsIgnoreCase(role);
     }
 
     @GetMapping

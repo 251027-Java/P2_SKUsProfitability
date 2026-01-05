@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -26,12 +25,9 @@ export default defineConfig({
           });
         },
         bypass: function(req, res, proxyOptions) {
-          // For GET requests to /api/auth/login or /api/auth/register, serve index.html
-          // This allows React Router to handle the route
           if (req.method === 'GET' && (req.url === '/api/auth/login' || req.url === '/api/auth/register')) {
             return '/index.html';
           }
-          // For all other requests, proxy to auth-service
           return null;
         }
       },

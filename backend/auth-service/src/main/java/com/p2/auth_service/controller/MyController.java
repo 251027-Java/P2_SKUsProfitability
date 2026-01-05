@@ -14,12 +14,3 @@ public class MyController {
     }
 }
 
-
-//
-//@RestController
-//class MyController {
-//    @GetMapping("/hello")
-//    public String hello() {
-//        return "Hello from Eureka Auth Client";
-//    }
-//}

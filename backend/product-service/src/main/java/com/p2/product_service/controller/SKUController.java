@@ -102,20 +102,16 @@ public class SKUController {
 
     @PostMapping("/sync")
     public ResponseEntity<String> syncProduct(@RequestParam("sku") String sku, HttpServletRequest request) {
-        // Keep it consistent with your other endpoints
         if (!isAdmin(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required");
         }
 
-        // 1. Find the product
         SKU product = skuRpo.findBySku(sku)
                 .orElseThrow(() -> new RuntimeException("Product not found: " + sku));
 
         try {
-            // 2. Convert to JSON (using the injected, TimeModule-capable mapper)
             String jsonProduct = objectMapper.writeValueAsString(product);
 
-            // 3. Send to Kafka
             producerService.sendMessage("sku-updates", jsonProduct);
 
             return ResponseEntity.ok("Successfully synced " + sku);
@@ -123,31 +119,5 @@ public class SKUController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Sync failed: " + e.getMessage());
         }
-    }
-
-//    @PostMapping("/sync-product/{sku}")
-//    public ResponseEntity<String> syncProduct(@PathVariable String sku) {
-//        // 1. Get the full product object from the DB
-//        SKU product = skuRpo.findBySku(sku)
-//                .orElseThrow(() -> new RuntimeException("Product not found"));
-//
-//        try {
-//            // 2. Convert the Object into a JSON String manually
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            String jsonProduct = objectMapper.writeValueAsString(product);
-//
-//            // 3. Send that JSON String to your partner's existing method
-//            producerService.sendMessage("sku-updates", jsonProduct);
-//
-//            return ResponseEntity.ok("Full product data sent as JSON for SKU: " + sku);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body("Error converting product to JSON: " + e.getMessage());
-//        }
-//    }
-    @GetMapping()
-    public ResponseEntity<?> getProductDetails(@RequestBody DataBrightRequest request){
-        List<SKU> skus = skuService.getSKUs();
-        return ResponseEntity.ok(skus);
     }
 }

@@ -17,20 +17,6 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-//    public String generateToken(Long userId, String email, String userRole) {
-//        Map<String, Object> claims = new HashMap<>();
-//        claims.put("role", userRole);
-//        claims.put("userId", userId);
-//
-//        return Jwts.builder()
-//                .claims(claims)
-//                .subject(email)
-//                .issuedAt(new Date())
-//                .expiration(new Date(System.currentTimeMillis() + (expiration * 1000)))
-//                .signWith(key)
-//                .compact();
-//    }
-
     public boolean validateToken(String token) {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);

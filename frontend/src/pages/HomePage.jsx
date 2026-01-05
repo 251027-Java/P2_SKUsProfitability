@@ -70,7 +70,7 @@ function HomePage() {
             const token = localStorage.getItem('token');
             if (!token) {
                 setError('Please log in to view your SKUs.');
-                window.location.href = '/api/auth/login';
+                window.location.href = '/auth/api/auth/login';
                 return;
             }
             const data = await getAllSKUs();
@@ -81,7 +81,7 @@ function HomePage() {
                 setError('Your session has expired. Please log in again.');
                 localStorage.removeItem('token');
                 setTimeout(() => {
-                    window.location.href = '/api/auth/login';
+                    window.location.href = '/auth/api/auth/login';
                 }, 2000);
             } else {
                 setError('Failed to load SKUs. Please try again.');
@@ -359,13 +359,23 @@ function HomePage() {
                 );
             case 'dashboard':
             default:
-                const skuIdsInLists = new Set();
-                lists.forEach(list => {
-                    if (list.items) {
-                        list.items.forEach(item => skuIdsInLists.add(item.skuId));
-                    }
-                });
+                // const skuIdsInLists = new Set();
+                // lists.forEach(list => {
+                //     if (list.items) {
+                //         list.items.forEach(item => skuIdsInLists.add(item.skuId));
+                //     }
+                // });
                 
+                const skuIdsInLists = new Set();
+
+                // This line prevents the crash:
+                if (Array.isArray(lists)) {
+                    lists.forEach(list => {
+                        if (list && list.items && Array.isArray(list.items)) {
+                            list.items.forEach(item => skuIdsInLists.add(item.skuId));
+                        }
+                    });
+                }
                 const unlistedSKUs = skus.filter(sku => !skuIdsInLists.has(sku.skuId));
                 
                 const productsNeedingAttention = skus.filter(sku => {
@@ -373,22 +383,40 @@ function HomePage() {
                     return profit < 0;
                 });
                 
-                const listsWithMetrics = lists.map(list => {
-                    const listSKUs = list.items || [];
-                    const listSKUsWithPrice = listSKUs.filter(sku => sku.sellingPrice && parseFloat(sku.sellingPrice) > 0);
-                    const avgPrice = listSKUsWithPrice.length > 0
-                        ? listSKUsWithPrice.reduce((sum, sku) => sum + parseFloat(sku.sellingPrice), 0) / listSKUsWithPrice.length
-                        : 0;
-                    const negativeCount = listSKUs.filter(sku => parseFloat(sku.netProfit || 0) < 0).length;
+                // const listsWithMetrics = lists.map(list => {
+                //     const listSKUs = list.items || [];
+                //     const listSKUsWithPrice = listSKUs.filter(sku => sku.sellingPrice && parseFloat(sku.sellingPrice) > 0);
+                //     const avgPrice = listSKUsWithPrice.length > 0
+                //         ? listSKUsWithPrice.reduce((sum, sku) => sum + parseFloat(sku.sellingPrice), 0) / listSKUsWithPrice.length
+                //         : 0;
+                //     const negativeCount = listSKUs.filter(sku => parseFloat(sku.netProfit || 0) < 0).length;
                     
-                    return {
-                        ...list,
-                        avgPrice,
-                        negativeCount,
-                        itemCount: list.itemCount || listSKUs.length
-                    };
-                });
+                //     return {
+                //         ...list,
+                //         avgPrice,
+                //         negativeCount,
+                //         itemCount: list.itemCount || listSKUs.length
+                //     };
+                // });
                 
+                // Add "Array.isArray(lists) ?" at the start
+                const listsWithMetrics = Array.isArray(lists) 
+                    ? lists.map(list => {
+                        const listSKUs = list.items || [];
+                        const listSKUsWithPrice = listSKUs.filter(sku => sku.sellingPrice && parseFloat(sku.sellingPrice) > 0);
+                        const avgPrice = listSKUsWithPrice.length > 0
+                            ? listSKUsWithPrice.reduce((sum, sku) => sum + parseFloat(sku.sellingPrice), 0) / listSKUsWithPrice.length
+                            : 0;
+                        const negativeCount = listSKUs.filter(sku => parseFloat(sku.netProfit || 0) < 0).length;
+                        
+                        return {
+                            ...list,
+                            avgPrice,
+                            negativeCount,
+                            itemCount: list.itemCount || listSKUs.length
+                        };
+                    }) 
+                : []; // If lists is not an array, this returns an empty list so the UI doesn't crash
                 return (
                     <>
                         <div className="mb-10">

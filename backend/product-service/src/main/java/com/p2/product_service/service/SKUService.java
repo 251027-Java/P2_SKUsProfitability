@@ -1,70 +1,59 @@
 package com.p2.product_service.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.exception.ResourceNotFoundException;
+import com.p2.product_service.mapper.DataBrightSkuToProductServiceSkuMapper;
 import com.p2.product_service.model.SKU;
+import com.p2.product_service.model.request.BrightData.BrightDataDiscoverByBestSellerRequest;
+import com.p2.product_service.model.response.DataBrightCategoryResponse;
 import com.p2.product_service.repository.SKURepository;
 import com.p2.product_service.util.DataTransformUtil;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.*;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class SKUService {
 
     private final SKURepository skuRepository;
     private final BasicCalculationService calculationService;
-    private final HttpClient httpClient;
+    private final BrightDataService brightDataService;
 
-    public SKUService(SKURepository skuRepository, BasicCalculationService calculationService, HttpClient httpClient) {
-        this.skuRepository = skuRepository;
-        this.calculationService = calculationService;
-        this.httpClient = httpClient;
+    private final DataBrightSkuToProductServiceSkuMapper skuMapper;
+
+    public void addSkusByCategory(BrightDataDiscoverByBestSellerRequest request) throws RuntimeException {
+
+           DataBrightCategoryResponse dataBrightCategoryResponse = brightDataService.getBestSellersByCategory(request);
+
+            List<SKU> mappedSkus = dataBrightCategoryResponse
+                                    .getSkuResponseList()
+                                    .stream()
+                                    .map(skuMapper::dataBrightSkuToProductServiceSku)
+                                    .toList();
+
+            skuRepository.saveAll(mappedSkus);
+
     }
 
-    @Value("${brightdata.api.url}")
-    private String brightDataApiUrl;
+    public void addSku(){
 
-    @Value("${brightdata.api.key}")
-    private String apiKey;
+    }
 
     public List<SKU> getSKUs() {
-//        List<BrightDataProductDetailsRequest> brightDataProductDetailRequests = new ArrayList<>();
-//        urls.forEach(url -> {
-//            BrightDataProductDetailsRequest productDetail = new BrightDataProductDetailsRequest();
-//            productDetail.setUrl(url);
-//            brightDataProductDetailRequests.add(productDetail);
-//        });
-//
-//        BrightDataCollectByUrlRequest brightDataCollectByUrlRequest = new BrightDataCollectByUrlRequest();
-//        brightDataCollectByUrlRequest.setInput(brightDataProductDetailRequests);
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//
-//        String requestBody = mapper.writeValueAsString(brightDataCollectByUrlRequest);
-//
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(new URI(brightDataApiUrl))
-//                .header("Authorization", "Bearer " + apiKey)
-//                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-//                .build();
-//
-//        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-//        DataBrightResponse dbResponse = mapper.readValue(response.body(), DataBrightResponse.class);
-//
-//        SKU sku = new SKU();
-//
-//        sku.setProductName(dbResponse.getTitle());
-//        sku.setSellingPrice(BigDecimal.valueOf(dbResponse.getFinalPrice()));
-//        sku.setDescription(dbResponse.getDescription());
-//        sku.setImageUrl(dbResponse.getImageUrl());
-//        sku.setWeight(BigDecimal.valueOf(dbResponse.getItemWeight()));
-        //
-        //
-        // return new SKU();
         return skuRepository.findAll();
     }
 

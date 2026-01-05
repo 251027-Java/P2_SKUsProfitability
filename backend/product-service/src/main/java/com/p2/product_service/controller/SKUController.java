@@ -2,6 +2,7 @@ package com.p2.product_service.controller;
 
 import java.util.List;
 
+import com.p2.product_service.repository.SKURepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -123,10 +124,12 @@ public class SKUController {
 
     @PostMapping("/add-category")
     public ResponseEntity<?> addProductsByCategory(@RequestBody BrightDataDiscoverByBestSellerRequest request){
+        skuService.addSkusByCategory(request);
+
         return ResponseEntity.ok("");
     }
 
-    @GetMapping()
+    @GetMapping("/get-all")
     public ResponseEntity<?> getProductDetails(@RequestBody BrightDataCollectByUrlRequest request) {
         List<SKU> skus = skuService.getSKUs();
         return ResponseEntity.ok(skus);

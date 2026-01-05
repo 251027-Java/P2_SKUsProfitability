@@ -4,7 +4,7 @@ import { login, register } from '../services/AuthService';
 
 function LoginPage() {
     const location = useLocation();
-    const isRegisterRoute = location.pathname === '/api/auth/register';
+    const isRegisterRoute = location.pathname === '/register';
     const [isRegistering, setIsRegistering] = useState(isRegisterRoute);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -87,9 +87,9 @@ function LoginPage() {
         setLastName('');
         setConfirmPassword('');
         if (isRegistering) {
-            navigate('/api/auth/login', { replace: true });
+            navigate('/login', { replace: true });
         } else {
-            navigate('/api/auth/register', { replace: true });
+            navigate('/register', { replace: true });
         }
     };
 

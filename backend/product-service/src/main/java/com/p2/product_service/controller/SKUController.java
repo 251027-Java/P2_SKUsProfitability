@@ -1,19 +1,26 @@
 package com.p2.product_service.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.p2.product_service.dto.SKUCreateDTO;
-import com.p2.product_service.dto.SKUDTO;
-import com.p2.product_service.model.SKU;
-import com.p2.product_service.repository.SKURepository;
-import com.p2.product_service.service.SKUService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
-import static org.springframework.kafka.support.KafkaHeaders.TOPIC;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.p2.product_service.dto.SKUDTO;
+import com.p2.product_service.model.SKU;
+import com.p2.product_service.model.request.DataBrightRequest;
+import com.p2.product_service.repository.SKURepository;
+import com.p2.product_service.service.SKUService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/skus")
@@ -31,8 +38,6 @@ public class SKUController {
         this.objectMapper = objectMapper;
     }
 
-    // --- Security Helpers ---
-
     private Long getUserId(HttpServletRequest request) {
         return (Long) request.getAttribute("userId");
     }
@@ -41,19 +46,6 @@ public class SKUController {
         String role = (String) request.getAttribute("userRole");
         return "ADMIN".equalsIgnoreCase(role);
     }
-
-//    // Testing
-//    private Long getUserId(HttpServletRequest request) {
-//        // Hardcode to 1L so the controller thinks a user is logged in
-//        return 1L;
-//    }
-//
-//    private boolean isAdmin(HttpServletRequest request) {
-//        // Always act like an admin for now
-//        return true;
-//    }
-
-    // --- Public/Shared Endpoints (Requires valid login, any role) ---
 
     @GetMapping
     public ResponseEntity<List<SKUDTO>> getAllSKUs(HttpServletRequest request) {
@@ -110,20 +102,16 @@ public class SKUController {
 
     @PostMapping("/sync")
     public ResponseEntity<String> syncProduct(@RequestParam("sku") String sku, HttpServletRequest request) {
-        // Keep it consistent with your other endpoints
         if (!isAdmin(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required");
         }
 
-        // 1. Find the product
         SKU product = skuRpo.findBySku(sku)
                 .orElseThrow(() -> new RuntimeException("Product not found: " + sku));
 
         try {
-            // 2. Convert to JSON (using the injected, TimeModule-capable mapper)
             String jsonProduct = objectMapper.writeValueAsString(product);
 
-            // 3. Send to Kafka
             producerService.sendMessage("sku-updates", jsonProduct);
 
             return ResponseEntity.ok("Successfully synced " + sku);
@@ -131,31 +119,5 @@ public class SKUController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Sync failed: " + e.getMessage());
         }
-    }
-
-//    @PostMapping("/sync-product/{sku}")
-//    public ResponseEntity<String> syncProduct(@PathVariable String sku) {
-//        // 1. Get the full product object from the DB
-//        SKU product = skuRpo.findBySku(sku)
-//                .orElseThrow(() -> new RuntimeException("Product not found"));
-//
-//        try {
-//            // 2. Convert the Object into a JSON String manually
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            String jsonProduct = objectMapper.writeValueAsString(product);
-//
-//            // 3. Send that JSON String to your partner's existing method
-//            producerService.sendMessage("sku-updates", jsonProduct);
-//
-//            return ResponseEntity.ok("Full product data sent as JSON for SKU: " + sku);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body("Error converting product to JSON: " + e.getMessage());
-//        }
-//    }
-    @GetMapping()
-    public ResponseEntity<?> getProductDetails(@RequestBody DataBrightRequest request){
-        List<SKU> skus = skuService.getSKUs();
-        return ResponseEntity.ok(skus);
     }
 }

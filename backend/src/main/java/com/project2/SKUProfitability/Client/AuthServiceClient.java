@@ -44,10 +44,8 @@ public class AuthServiceClient {
         } catch (ResourceAccessException e) {
             throw new RuntimeException("Cannot connect to auth-service at " + authServiceUrl + ". Please ensure auth-service is running on port 8081.", e);
         } catch (HttpClientErrorException e) {
-            // Pass through HTTP client errors (4xx) with their original message
             throw new RuntimeException("Auth service error: " + e.getResponseBodyAsString(), e);
         } catch (HttpServerErrorException e) {
-            // Pass through HTTP server errors (5xx) with their original message
             throw new RuntimeException("Auth service error: " + e.getResponseBodyAsString(), e);
         } catch (RestClientException e) {
             throw new RuntimeException("Error communicating with auth-service: " + e.getMessage(), e);
@@ -68,10 +66,8 @@ public class AuthServiceClient {
         } catch (ResourceAccessException e) {
             throw new RuntimeException("Cannot connect to auth-service at " + authServiceUrl + ". Please ensure auth-service is running on port 8081.", e);
         } catch (HttpClientErrorException e) {
-            // Pass through HTTP client errors (4xx) with their original message
             throw new RuntimeException("Auth service error: " + e.getResponseBodyAsString(), e);
         } catch (HttpServerErrorException e) {
-            // Pass through HTTP server errors (5xx) with their original message
             throw new RuntimeException("Auth service error: " + e.getResponseBodyAsString(), e);
         } catch (RestClientException e) {
             throw new RuntimeException("Error communicating with auth-service: " + e.getMessage(), e);

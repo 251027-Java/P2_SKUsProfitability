@@ -183,7 +183,6 @@ public class FBAFeeCalculatorService {
 
         com.p2.calculator_service.model.Calculation calc = new com.p2.calculator_service.model.Calculation();
 
-        // Input Data
         calc.setLength(product.getLength());
         calc.setWidth(product.getWidth());
         calc.setHeight(product.getHeight());
@@ -191,12 +190,10 @@ public class FBAFeeCalculatorService {
         calc.setSellingPrice(product.getSellingPrice());
         calc.setCategory(product.getCategory());
 
-        // Default Constants for automatic calc
-        BigDecimal defaultStorageTime = new BigDecimal("1"); // 1 month
+        BigDecimal defaultStorageTime = new BigDecimal("1");
         calc.setTimeInStorage(defaultStorageTime);
         calc.setReferralFeePercentage(new BigDecimal("15.00"));
 
-        // Calculations
         BigDecimal fbaFee = calculateFBAFulfillmentFee(product.getLength(), product.getWidth(), product.getHeight(),
                 product.getWeight());
         calc.setFbaFulfillmentFee(fbaFee);
@@ -214,7 +211,6 @@ public class FBAFeeCalculatorService {
                 product.getHeight(), defaultStorageTime);
         calc.setStorageFeeOctDec(storageOctDec);
 
-        // Profitability (using Jan-Sep as default view for total fees)
         BigDecimal totalFees = calculateTotalFees(fbaFee, referralFee, storageJanSep);
         calc.setTotalFeesJanSep(totalFees);
         calc.setTotalFeesOctDec(calculateTotalFees(fbaFee, referralFee, storageOctDec));

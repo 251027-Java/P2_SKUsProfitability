@@ -57,78 +57,8 @@ public class SKUService {
     private String apiKey;
 
     public List<SKU> getSKUs() {
-//        List<ProductDetails> productDetails = new ArrayList<>();
-//        urls.forEach(url -> {
-//            ProductDetails productDetail = new ProductDetails();
-//            productDetail.setUrl(url);
-//            productDetails.add(productDetail);
-//        });
-//
-//        DataBrightRequest dataBrightRequest = new DataBrightRequest();
-//        dataBrightRequest.setInput(productDetails);
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//
-//        String requestBody = mapper.writeValueAsString(dataBrightRequest);
-//
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(new URI(brightDataApiUrl))
-//                .header("Authorization", "Bearer " + apiKey)
-//                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-//                .build();
-//
-//        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-//        DataBrightResponse dbResponse = mapper.readValue(response.body(), DataBrightResponse.class);
-//
-//        SKU sku = new SKU();
-//
-//        sku.setProductName(dbResponse.getTitle());
-//        sku.setSellingPrice(BigDecimal.valueOf(dbResponse.getFinalPrice()));
-//        sku.setDescription(dbResponse.getDescription());
-//        sku.setImageUrl(dbResponse.getImageUrl());
-//        sku.setWeight(BigDecimal.valueOf(dbResponse.getItemWeight()));
-//
-//
-//        return new SKU();
-    return skuRepository.findAll();
+        return skuRepository.findAll();
     }
-
-//    public SKUDTO createSKU(SKUCreateDTO dto) {
-//        ValidationUtil.validateSKUFormat(dto.sku());
-//        ValidationUtil.validateProductName(dto.productName());
-//        ValidationUtil.validateRequired(dto.description(), "Description");
-//        ValidationUtil.validateCategory(dto.category());
-//        ValidationUtil.validateDimension(dto.length(), "Length");
-//        ValidationUtil.validateDimension(dto.width(), "Width");
-//        ValidationUtil.validateDimension(dto.height(), "Height");
-//        ValidationUtil.validateWeight(dto.weight());
-//        ValidationUtil.validatePrice(dto.sellingPrice(), "Selling Price");
-//
-//        if (skuRepository.existsBySku(dto.sku())) {
-//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-//        }
-//
-//        SKU sku = new SKU(
-//                dto.sku(),
-//                dto.productName(),
-//                dto.description(),
-//                dto.length(),
-//                dto.width(),
-//                dto.height(),
-//                dto.weight(),
-//                dto.category(),
-//                dto.sellingPrice()
-//        );
-//
-//        calculateAndSetFees(sku);
-//
-//        try {
-//            SKU savedSku = skuRepository.save(sku);
-//            return DataTransformUtil.toSKUDTO(savedSku);
-//        } catch (DataIntegrityViolationException e) {
-//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-//        }
-//    }
 
     private void calculateAndSetFees(SKU sku) {
         if (sku.getLength() != null && sku.getWidth() != null &&
@@ -168,7 +98,6 @@ public class SKUService {
     }
 
     public List<SKUDTO> getAllSKUs() {
-        // skuRepository.findAll() returns every product in the database
         return DataTransformUtil.toSKUDTOList(skuRepository.findAll());
     }
 

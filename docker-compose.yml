@@ -60,32 +60,53 @@ services:
     networks:
       - sku-network
 
+  eureka-server:
+    build:
+      context: ./backend/eureka-server
+      dockerfile: Dockerfile
+    container_name: sku-eureka-server
+    ports:
+      - "8761:8761"
+    restart: unless-stopped
+    networks:
+      - sku-network
+    healthcheck:
+      test: [ "CMD-SHELL", "nc -z localhost 8761 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
   calculator-service:
     build:
       context: ./backend/calculator-service
       dockerfile: Dockerfile
     container_name: sku-calculator-service
     environment:
+      SERVER_PORT: 8082
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/sku_profitability_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: mysecretpassword
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     ports:
-      - "8081:8081"
+      - "8082:8082"
     depends_on:
       db:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - sku-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/api/calculator/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: [ "CMD-SHELL", "nc -z localhost 8082 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   auth-service:
     build:
@@ -97,20 +118,23 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: mysecretpassword
       JWT_SECRET: QzXgN8yJpY4rL2sF5vW0hT1bA7eC9uD3kH6mZpXqYwS0jL9kVyN8tR7eF6dG5hA9bC8dE7fG6hI5jK4lM3nO2pQ1rS0tU9vW8xY7zZ6yA5bX4cW3vU2tS1rQ0pOnM9lK8jI7hG6fE5dC4bA3zY2xW1vU0tS9rQ8pOn
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     ports:
-      - "8082:8082"
+      - "8081:8081"
     depends_on:
       db:
+        condition: service_healthy
+      eureka-server:
         condition: service_healthy
     restart: unless-stopped
     networks:
       - sku-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8082/api/auth/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: [ "CMD-SHELL", "nc -z localhost 8081 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   product-service:
     build:
@@ -123,6 +147,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: mysecretpassword
       JWT_SECRET: QzXgN8yJpY4rL2sF5vW0hT1bA7eC9uD3kH6mZpXqYwS0jL9kVyN8tR7eF6dG5hA9bC8dE7fG6hI5jK4lM3nO2pQ1rS0tU9vW8xY7zZ6yA5bX4cW3vU2tS1rQ0pOnM9lK8jI7hG6fE5dC4bA3zY2xW1vU0tS9rQ8pOn
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     ports:
       - "8083:8083"
     depends_on:
@@ -130,15 +155,17 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - sku-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8083/api/product/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: [ "CMD-SHELL", "nc -z localhost 8083 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   backend:
     build:

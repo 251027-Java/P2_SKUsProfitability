@@ -2,6 +2,7 @@ package com.p2.product_service.controller;
 
 import java.util.List;
 
+import com.p2.product_service.repository.SKURepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.model.SKU;
-import com.p2.product_service.model.request.DataBrightRequest;
-import com.p2.product_service.repository.SKURepository;
+import com.p2.product_service.model.request.BrightData.BrightDataCollectByUrlRequest;
+import com.p2.product_service.model.request.BrightData.BrightDataDiscoverByBestSellerRequest;
 import com.p2.product_service.service.SKUService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -119,5 +120,18 @@ public class SKUController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Sync failed: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/add-category")
+    public ResponseEntity<?> addProductsByCategory(@RequestBody BrightDataDiscoverByBestSellerRequest request){
+        List<SKU> skus = skuService.addSkusByCategory(request);
+
+        return ResponseEntity.ok(skus);
+    }
+
+    @GetMapping("/get-all")
+    public ResponseEntity<?> getProductDetails(@RequestBody BrightDataCollectByUrlRequest request) {
+        List<SKU> skus = skuService.getSKUs();
+        return ResponseEntity.ok(skus);
     }
 }

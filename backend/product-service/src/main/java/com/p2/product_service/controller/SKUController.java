@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2.product_service.dto.SKUCreateDTO;
 import com.p2.product_service.dto.SKUDTO;
 import com.p2.product_service.model.SKU;
+import com.p2.product_service.model.request.DataBrightRequest;
 import com.p2.product_service.repository.SKURepository;
 import com.p2.product_service.service.SKUService;
 import jakarta.servlet.http.HttpServletRequest;

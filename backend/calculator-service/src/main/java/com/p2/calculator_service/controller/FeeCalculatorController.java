@@ -1,5 +1,18 @@
 package com.p2.calculator_service.controller;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.p2.calculator_service.dto.FeeCalculationRequest;
 import com.p2.calculator_service.model.Calculation;
 import com.p2.calculator_service.model.Product;
@@ -8,18 +21,11 @@ import com.p2.calculator_service.repository.ProductRepository;
 import com.p2.calculator_service.service.FBAFeeCalculatorService;
 import com.p2.calculator_service.util.CalculationUtil;
 import com.p2.calculator_service.util.ValidationUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/calculator")
-// Note: @CrossOrigin removed because CORS is handled in WebConfig
 public class FeeCalculatorController {
 
     private final FBAFeeCalculatorService feeCalculatorService;
@@ -33,15 +39,12 @@ public class FeeCalculatorController {
         this.productRepository = productRepository;
     }
 
-    // --- Security Helper: PRODUCTION MODE ---
     private Long getUserId(HttpServletRequest request) {
-        // 1. Check Attributes (populated by Interceptor if not excluded)
         Object attrId = request.getAttribute("userId");
         if (attrId != null) {
             return (Long) attrId;
         }
 
-        // 2. Check Headers (populated by Thunder Client or Gateway)
         String headerId = request.getHeader("userId");
         if (headerId != null && !headerId.isEmpty()) {
             try {
@@ -54,13 +57,6 @@ public class FeeCalculatorController {
         return null;
     }
 
-//    // --- Security Helper: TEST MODE ---
-//    private Long getUserId(HttpServletRequest request) {
-//        // ALWAYS returns 1L. No token or Interceptor needed.
-//        // This allows you to test the logic without any security hurdles.
-//        return 1L;
-//    }
-
     @PostMapping("/calculate")
     public ResponseEntity<Map<String, Object>> calculateFees(
             @RequestBody FeeCalculationRequest request,
@@ -68,7 +64,6 @@ public class FeeCalculatorController {
         try {
             Long currentUserId = getUserId(httpServletRequest);
 
-            // Validate Inputs
             ValidationUtil.validateDimension(request.length(), "Length");
             ValidationUtil.validateDimension(request.width(), "Width");
             ValidationUtil.validateDimension(request.height(), "Height");
@@ -76,7 +71,6 @@ public class FeeCalculatorController {
             ValidationUtil.validatePrice(request.sellingPrice(), "Selling Price");
             ValidationUtil.validateTimeInStorage(request.timeInStorage());
 
-            // Core Calculations
             String sizeTier = feeCalculatorService.determineSizeTier(
                     request.length(), request.width(), request.height(), request.weight()
             );

@@ -57,15 +57,6 @@ public class SKUService {
     private String apiKey;
 
     public List<SKU> getSKUs() {
-//        List<ProductDetails> productDetails = new ArrayList<>();
-//        urls.forEach(url -> {
-//            ProductDetails productDetail = new ProductDetails();
-//            productDetail.setUrl(url);
-//            productDetails.add(productDetail);
-//        });
-//
-//        DataBrightRequest dataBrightRequest = new DataBrightRequest();
-//        dataBrightRequest.setInput(productDetails);
 //
 //        ObjectMapper mapper = new ObjectMapper();
 //
@@ -117,19 +108,6 @@ public class SKUService {
 //                dto.height(),
 //                dto.weight(),
 //                dto.category(),
-//                dto.sellingPrice()
-//        );
-//
-//        calculateAndSetFees(sku);
-//
-//        try {
-//            SKU savedSku = skuRepository.save(sku);
-//            return DataTransformUtil.toSKUDTO(savedSku);
-//        } catch (DataIntegrityViolationException e) {
-//            throw new IllegalArgumentException("SKU already exists: " + dto.sku());
-//        }
-//    }
-
     private void calculateAndSetFees(SKU sku) {
         if (sku.getLength() != null && sku.getWidth() != null &&
                 sku.getHeight() != null && sku.getWeight() != null) {

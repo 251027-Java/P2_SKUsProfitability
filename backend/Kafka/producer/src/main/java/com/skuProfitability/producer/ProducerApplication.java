@@ -26,7 +26,6 @@ public class ProducerApplication {
 	public Map<String, String> sendMessage(@RequestBody Map<String, String> payload) {
 		String message = payload.get("message");
 
-		// Use the service to send the message
 		producerService.sendMessage(TOPIC, message);
 
 		System.out.println("Sending message: " + message);

@@ -9,11 +9,7 @@ import java.util.Optional;
 @Repository
 public interface SKURepository extends JpaRepository<SKU, Long> {
 
-    //List<SKU> findByUserId(Long userId);
-
     Optional<SKU> findBySku(String sku);
-
-    //boolean existsByUserIdAndSku(Long userId, String sku);
 
     boolean existsBySku(String sku);
 }

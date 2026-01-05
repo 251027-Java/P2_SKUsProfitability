@@ -20,11 +20,9 @@ public class Calculation {
     @Column(name = "userId")
     private Long userId;
 
-    //NEW FIELD ADDED
     @Column(length = 100)
     private String sku;
     
-    // Input dimensions
     @Column(precision = 10, scale = 2)
     private BigDecimal length;
     
@@ -37,7 +35,6 @@ public class Calculation {
     @Column(precision = 10, scale = 2)
     private BigDecimal weight;
     
-    // Input pricing
     @Column(precision = 10, scale = 2)
     private BigDecimal sellingPrice;
     
@@ -65,7 +62,6 @@ public class Calculation {
     @Column(precision = 10, scale = 2)
     private BigDecimal referralFeePercentage;
     
-    // Calculated results
     @Column(length = 50)
     private String sizeTier;
     

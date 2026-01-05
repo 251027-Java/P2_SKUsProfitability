@@ -7,11 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.Map;
 
-/**
- * Controller for FBA fee calculations.
- * Now delegates to the CalculatorService microservice instead of performing calculations locally.
- * This follows the microservice pattern from the reference project.
- */
 @RestController
 @RequestMapping("/api/calculator")
 public class FeeCalculatorController {
@@ -21,13 +16,8 @@ public class FeeCalculatorController {
         this.calculatorServiceClient = calculatorServiceClient;
     }
     
-    /**
-     * Calculate FBA fees by calling the CalculatorService microservice.
-     * The microservice performs the calculation and stores it in the database.
-     */
     @PostMapping("/calculate")
     public ResponseEntity<Map<String, Object>> calculateFees(@RequestBody FeeCalculationRequest request) {
-        // Convert main backend request to microservice request format
         CalculatorServiceClient.FeeCalculationRequest microserviceRequest = 
             new CalculatorServiceClient.FeeCalculationRequest(
                 request.userId(),
@@ -46,13 +36,9 @@ public class FeeCalculatorController {
                 request.referralFeePercentage()
             );
         
-        // Call the CalculatorService microservice
         return calculatorServiceClient.calculateFees(microserviceRequest);
     }
     
-    /**
-     * Health check endpoint that also verifies calculator service is reachable
-     */
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
         boolean calculatorServiceHealthy = calculatorServiceClient.isServiceHealthy();

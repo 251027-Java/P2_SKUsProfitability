@@ -1,5 +1,18 @@
 package com.p2.calculator_service.controller;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.p2.calculator_service.dto.FeeCalculationRequest;
 import com.p2.calculator_service.model.Calculation;
 import com.p2.calculator_service.model.Product;
@@ -8,18 +21,11 @@ import com.p2.calculator_service.repository.ProductRepository;
 import com.p2.calculator_service.service.FBAFeeCalculatorService;
 import com.p2.calculator_service.util.CalculationUtil;
 import com.p2.calculator_service.util.ValidationUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/calculator")
-// Note: @CrossOrigin removed because CORS is handled in WebConfig
 public class FeeCalculatorController {
 
     private final FBAFeeCalculatorService feeCalculatorService;
@@ -33,15 +39,12 @@ public class FeeCalculatorController {
         this.productRepository = productRepository;
     }
 
-    // --- Security Helper: PRODUCTION MODE ---
     private Long getUserId(HttpServletRequest request) {
-        // 1. Check Attributes (populated by Interceptor if not excluded)
         Object attrId = request.getAttribute("userId");
         if (attrId != null) {
             return (Long) attrId;
         }
 
-        // 2. Check Headers (populated by Thunder Client or Gateway)
         String headerId = request.getHeader("userId");
         if (headerId != null && !headerId.isEmpty()) {
             try {
@@ -54,13 +57,6 @@ public class FeeCalculatorController {
         return null;
     }
 
-//    // --- Security Helper: TEST MODE ---
-//    private Long getUserId(HttpServletRequest request) {
-//        // ALWAYS returns 1L. No token or Interceptor needed.
-//        // This allows you to test the logic without any security hurdles.
-//        return 1L;
-//    }
-
     @PostMapping("/calculate")
     public ResponseEntity<Map<String, Object>> calculateFees(
             @RequestBody FeeCalculationRequest request,
@@ -68,7 +64,6 @@ public class FeeCalculatorController {
         try {
             Long currentUserId = getUserId(httpServletRequest);
 
-            // Validate Inputs
             ValidationUtil.validateDimension(request.length(), "Length");
             ValidationUtil.validateDimension(request.width(), "Width");
             ValidationUtil.validateDimension(request.height(), "Height");
@@ -76,7 +71,6 @@ public class FeeCalculatorController {
             ValidationUtil.validatePrice(request.sellingPrice(), "Selling Price");
             ValidationUtil.validateTimeInStorage(request.timeInStorage());
 
-            // Core Calculations
             String sizeTier = feeCalculatorService.determineSizeTier(
                     request.length(), request.width(), request.height(), request.weight()
             );
@@ -101,7 +95,6 @@ public class FeeCalculatorController {
                     request.length(), request.width(), request.height(), timeInStorage
             );
 
-            // Freight and Other Costs
             BigDecimal unitFreightCost = BigDecimal.ZERO;
             if (request.freightCost() != null && request.freightCost().compareTo(BigDecimal.ZERO) > 0) {
                 unitFreightCost = feeCalculatorService.calculateUnitFreightCost(
@@ -120,7 +113,6 @@ public class FeeCalculatorController {
                 }
             }
 
-            // Totals and Profits
             BigDecimal totalFeesJanSep = CalculationUtil.safeAdd(fbaFee, referralFee);
             BigDecimal totalFeesOctDec = CalculationUtil.safeAdd(fbaFee, referralFee);
 
@@ -130,12 +122,8 @@ public class FeeCalculatorController {
             BigDecimal profitMarginJanSep = CalculationUtil.calculateProfitMargin(netProfitJanSep, request.sellingPrice());
             BigDecimal profitMarginOctDec = CalculationUtil.calculateProfitMargin(netProfitOctDec, request.sellingPrice());
 
-            // Database Persistence
             Calculation calculation = new Calculation();
-            calculation.setUserId(currentUserId); // SECURE: Uses verified ID
-            calculation.setLength(request.length());
-            calculation.setWidth(request.width());
-            calculation.setHeight(request.height());
+            calculation.setUserId(currentUserId);tHeight(request.height());
             calculation.setWeight(request.weight());
             calculation.setSellingPrice(request.sellingPrice());
             calculation.setCategory(request.category());
@@ -161,11 +149,9 @@ public class FeeCalculatorController {
 
             calculationRepository.save(calculation);
 
-            // Response Map
             Map<String, Object> response = new HashMap<>();
             response.put("sizeTier", sizeTier);
             response.put("fbaFulfillmentFee", fbaFee);
-            response.put("referralFee", referralFee);
             response.put("storageFeeJanSep", storageFeeJanSep);
             response.put("storageFeeOctDec", storageFeeOctDec);
             response.put("unitFreightCost", unitFreightCost);
@@ -190,11 +176,9 @@ public class FeeCalculatorController {
             @RequestBody FeeCalculationRequest request,
             HttpServletRequest httpServletRequest) {
         try {
-            // 1. Fetch Default Data from the local synced Product table
             Product product = productRepository.findBySku(sku)
                     .orElseThrow(() -> new RuntimeException("SKU not found: " + sku));
 
-            // 2. Merge Data: Priority is JSON Request -> Then Synced Database Defaults
             BigDecimal length = request.length() != null ? request.length() : product.getLength();
             BigDecimal width = request.width() != null ? request.width() : product.getWidth();
             BigDecimal height = request.height() != null ? request.height() : product.getHeight();
@@ -202,25 +186,21 @@ public class FeeCalculatorController {
             BigDecimal price = request.sellingPrice() != null ? request.sellingPrice() : product.getSellingPrice();
             String category = request.category() != null ? request.category() : product.getCategory();
 
-            // 3. Extract Security/Context Data (Pulls from Attribute/Header)
             Long currentUserId = getUserId(httpServletRequest);
 
-            // 4. Validate Inputs
             ValidationUtil.validateDimension(length, "Length");
             ValidationUtil.validateDimension(width, "Width");
             ValidationUtil.validateDimension(height, "Height");
             ValidationUtil.validateWeight(weight);
             ValidationUtil.validatePrice(price, "Selling Price");
 
-            // 5. Core Fee Calculations
             String sizeTier = feeCalculatorService.determineSizeTier(length, width, height, weight);
             BigDecimal fbaFee = feeCalculatorService.calculateFBAFulfillmentFee(length, width, height, weight);
 
             BigDecimal referralFee;
-            // Use percentage from request if provided, otherwise service calculates based on category
             if (request.referralFeePercentage() != null && request.referralFeePercentage().compareTo(BigDecimal.ZERO) > 0) {
                 referralFee = CalculationUtil.calculatePercentage(price, request.referralFeePercentage());
-                referralFee = referralFee.max(new BigDecimal("0.30")); // Amazon minimum
+                referralFee = referralFee.max(new BigDecimal("0.30"));
             } else {
                 referralFee = feeCalculatorService.calculateReferralFee(price, category);
             }
@@ -229,7 +209,6 @@ public class FeeCalculatorController {
             BigDecimal storageFeeJanSep = feeCalculatorService.calculateStorageFeeJanSep(length, width, height, timeInStorage);
             BigDecimal storageFeeOctDec = feeCalculatorService.calculateStorageFeeOctDec(length, width, height, timeInStorage);
 
-            // 6. Logistics & Miscellaneous Costs
             BigDecimal unitFreightCost = BigDecimal.ZERO;
             if (request.freightCost() != null && request.freightCost().compareTo(BigDecimal.ZERO) > 0) {
                 unitFreightCost = feeCalculatorService.calculateUnitFreightCost(
@@ -248,7 +227,6 @@ public class FeeCalculatorController {
                 }
             }
 
-            // 7. Profit, Margin, and ROI Calculations
             BigDecimal totalFeesJanSep = fbaFee.add(referralFee).add(storageFeeJanSep).add(unitFreightCost).add(otherCostsValue);
             BigDecimal totalFeesOctDec = fbaFee.add(referralFee).add(storageFeeOctDec).add(unitFreightCost).add(otherCostsValue);
 
@@ -266,7 +244,6 @@ public class FeeCalculatorController {
                     ? netProfitOctDec.divide(totalFeesOctDec, 4, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal("100"))
                     : BigDecimal.ZERO;
 
-            // 8. Database Persistence (The "History" Save)
             Calculation calculation = new Calculation();
             calculation.setUserId(currentUserId);
             calculation.setSku(sku);
@@ -278,16 +255,14 @@ public class FeeCalculatorController {
             calculation.setCategory(category);
             calculation.setTimeInStorage(timeInStorage);
 
-            // Save inputs from request
             calculation.setFreightCost(request.freightCost());
             calculation.setFreightCostUnit(request.freightCostUnit());
             calculation.setOtherCosts(request.otherCosts());
             calculation.setOtherCostsType(request.otherCostsType());
-            calculation.setReferralFeePercentage(request.referralFeePercentage()); //No longer null
+            calculation.setReferralFeePercentage(request.referralFeePercentage());
 
-            // Save calculated results
             calculation.setSizeTier(sizeTier);
-            calculation.setFbaFeeCategory(sizeTier); //Populates fbaFeeCategory column
+            calculation.setFbaFeeCategory(sizeTier);
             calculation.setFbaFulfillmentFee(fbaFee);
             calculation.setReferralFee(referralFee);
             calculation.setStorageFeeJanSep(storageFeeJanSep);
@@ -298,7 +273,6 @@ public class FeeCalculatorController {
             calculation.setNetProfitJanSep(netProfitJanSep);
             calculation.setNetProfitOctDec(netProfitOctDec);
 
-            // Save ROI and Margins
             calculation.setRoiJanSep(roiJanSep);
             calculation.setRoiOctDec(roiOctDec);
             calculation.setProfitMarginJanSep(profitMarginJanSep != null ? profitMarginJanSep : BigDecimal.ZERO);
@@ -306,7 +280,6 @@ public class FeeCalculatorController {
 
             calculationRepository.save(calculation);
 
-            // 9. Build Response Map
             Map<String, Object> response = new LinkedHashMap<>();
             response.put("sku", sku);
             response.put("userId", currentUserId);

@@ -26,7 +26,6 @@ public class AuthController {
             if (message != null && message.contains("Cannot connect to auth-service")) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message);
             }
-            // Check if it's an auth error from the auth-service
             if (message != null && (message.contains("User not found") || message.contains("Invalid password"))) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, message);
             }
@@ -50,12 +49,10 @@ public class AuthController {
             if (message != null && message.contains("Cannot connect to auth-service")) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message);
             }
-            // Check if it's a validation error from the auth-service
             if (message != null && message.contains("Email already in use")) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, message);
             }
             if (message != null && message.contains("Auth service error")) {
-                // Extract the actual error from auth-service
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
             }
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Registration failed: " + message);

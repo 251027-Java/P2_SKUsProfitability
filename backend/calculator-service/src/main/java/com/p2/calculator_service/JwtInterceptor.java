@@ -17,11 +17,6 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestUri = request.getRequestURI();
 
-//        if (requestUri.equals("/api/calculator") ||
-//                requestUri.startsWith("/api/calculator/")) {
-//            return true;
-//        }
-
         String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -38,14 +33,6 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         Long userId = jwtUtil.getUserIdFromToken(token);
         String userRole = jwtUtil.getRoleFromToken(token);
-
-//        if (requestUri.startsWith("/api/admin")) {
-//            if (!"ADMIN".equals(userRole)) {
-//                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//                response.getWriter().write("Forbidden: Administrator access required.");
-//                return false;
-//            }
-//        }
 
         request.setAttribute("userId", userId);
         request.setAttribute("userRole", userRole);

@@ -45,7 +45,6 @@ public class AppUserServiceTest {
         when(repository.findByEmail(validDto.email())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(validDto.password())).thenReturn("hashedPassword");
         when(repository.save(any(AppUser.class))).thenReturn(savedUser);
-
         AppUserDTO result = service.registerNewCustomer(validDto);
         assertNotNull(result);
         assertEquals("test@email.com", result.email());
@@ -64,6 +63,11 @@ public class AppUserServiceTest {
 
     @Test
     void appUserToDto_MapsCorrectly() {
+        // Same stubbing as happy path to ensure mapping happens
+        when(repository.findByEmail(validDto.email())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(validDto.password())).thenReturn("hashedPassword");
+        when(repository.save(any(AppUser.class))).thenReturn(savedUser);
+
         AppUserDTO dto = service.registerNewCustomer(validDto);
         assertEquals(savedUser.getEmail(), dto.email());
         assertEquals(savedUser.getUserRole(), dto.userRole());
@@ -74,32 +78,28 @@ public class AppUserServiceTest {
     @Test
     void registerNewCustomer_InvalidEmail_ThrowsException() {
         RegisterCustomerDTO invalidEmailDto = new RegisterCustomerDTO("bademail", "Password123!", "John", "Doe");
-        doThrow(new IllegalArgumentException("Invalid email format.")).when(ValidationUtil.class);
         Exception exception = assertThrows(IllegalArgumentException.class, () -> service.registerNewCustomer(invalidEmailDto));
-        assertTrue(exception.getMessage().contains("Invalid email format."));
+        assertTrue(exception.getMessage().contains("Invalid email format"));
     }
 
     @Test
     void registerNewCustomer_InvalidPassword_ThrowsException() {
         RegisterCustomerDTO invalidPasswordDto = new RegisterCustomerDTO("test@email.com", "bad", "John", "Doe");
-        doThrow(new IllegalArgumentException("Invalid password.")).when(ValidationUtil.class);
         Exception exception = assertThrows(IllegalArgumentException.class, () -> service.registerNewCustomer(invalidPasswordDto));
-        assertTrue(exception.getMessage().contains("Invalid password."));
+        assertTrue(exception.getMessage().contains("at least 6"));
     }
 
     @Test
     void registerNewCustomer_InvalidFirstName_ThrowsException() {
         RegisterCustomerDTO invalidFirstNameDto = new RegisterCustomerDTO("test@email.com", "Password123!", "", "Doe");
-        doThrow(new IllegalArgumentException("First Name is required.")).when(ValidationUtil.class);
         Exception exception = assertThrows(IllegalArgumentException.class, () -> service.registerNewCustomer(invalidFirstNameDto));
-        assertTrue(exception.getMessage().contains("First Name is required."));
+        assertTrue(exception.getMessage().contains("First Name is required"));
     }
 
     @Test
     void registerNewCustomer_InvalidLastName_ThrowsException() {
         RegisterCustomerDTO invalidLastNameDto = new RegisterCustomerDTO("test@email.com", "Password123!", "John", "");
-        doThrow(new IllegalArgumentException("Last Name is required.")).when(ValidationUtil.class);
         Exception exception = assertThrows(IllegalArgumentException.class, () -> service.registerNewCustomer(invalidLastNameDto));
-        assertTrue(exception.getMessage().contains("Last Name is required."));
+        assertTrue(exception.getMessage().contains("Last Name is required"));
     }
 }

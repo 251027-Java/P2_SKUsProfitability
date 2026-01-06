@@ -2,6 +2,7 @@ package com.p2.product_service.mapper;
 
 import com.p2.product_service.model.SKU;
 import com.p2.product_service.model.response.BrightDataSkuResponse;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -28,6 +29,10 @@ public class DataBrightSkuToProductServiceSkuMapper {
     }
 
     private void parseWeight(String itemWeight, SKU sku){
+        if(StringUtils.isBlank(itemWeight)){
+            sku.setWeight(BigDecimal.ZERO);
+            return;
+        }
         Pattern pattern = Pattern.compile("\\d+(?:\\.\\d+)?");
         Matcher matcher = pattern.matcher(itemWeight);
 
@@ -42,6 +47,13 @@ public class DataBrightSkuToProductServiceSkuMapper {
 
 
     private void parseDimensions(String productDimensions, SKU sku) {
+
+        if(StringUtils.isBlank(productDimensions)){
+            sku.setLength(BigDecimal.ZERO);
+            sku.setWidth(BigDecimal.ZERO);
+            sku.setHeight(BigDecimal.ZERO);
+            return;
+        }
         Pattern numberPattern = Pattern.compile("\\d+(?:\\.\\d+)?");
         Matcher matcher = numberPattern.matcher(productDimensions);
 

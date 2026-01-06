@@ -26,6 +26,7 @@ pipeline {
                     sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
                 }
+                /*
                 dir('./backend/auth-service') {
                     sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
@@ -42,6 +43,7 @@ pipeline {
                     sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
                 }
+            */
             }
         }
     }

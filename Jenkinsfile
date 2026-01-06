@@ -14,61 +14,43 @@ pipeline {
             }
         }
         
-        stage('Checkout') {
+        stage('Git Checkout') {
             steps {
                 echo 'Code checked out from Git'
             }
         }
-        
-        stage('Build Backend') {
+
+        stage('Maven dependencies') { // mvnw install dependencies
             steps {
-                dir('backend') {
-                    sh 'mvn clean install'
+                echo 'Running a clean install' 
+                sh 'cd ./backend && chmod +x ./mvnw && ./mvnw clean install'
+                sh 'cd ./backend/auth-service && chmod +x ./mvnw && ./mvnw clean install'
+                sh 'cd ./backend/calculator-service && chmod +x ./mvnw && ./mvnw clean install'
+                sh 'cd ./Backend/product-service && chmod +x ./mvnw && ./mvnw clean install'
+                sh 'cd ./Backend/SKUProfitability && chmod +x ./mvnw && ./mvnw clean install'
+            }
+        }
+
+        stage('Build and Package') { // build the jar
+            steps {
+                dir('./backend') {
+                    sh './mvnw package -DskipTests'
+                }
+                dir('./backend/auth-service') {
+                    sh './mvnw package -DskipTests'
+                }
+                dir('./backend/calculator-service') {
+                    sh './mvnw package -DskipTests'
+                }
+                dir('./backend/product-service') {
+                    sh './mvnw package -DskipTests'
+                }
+                dir('./backend/SKUProfitability') {
+                    sh './mvnw package -DskipTests'
                 }
             }
         }
         
-        stage('Test Backend') {
-            steps {
-                dir('backend') {
-                    sh 'mvn test'
-                }
-            }
-        }
-        
-        stage('Package Backend') {
-            steps {
-                dir('backend') {
-                    sh 'mvn package -DskipTests'
-                }
-            }
-        }
-        
-        stage('Build ProductService') {
-            steps {
-                dir('ProductService') {
-                    sh 'mvn clean install'
-                }
-            }
-        }
-        
-        stage('Test ProductService') {
-            steps {
-                dir('ProductService') {
-                    sh 'mvn test'
-                }
-            }
-        }
-        
-        stage('Package ProductService') {
-            steps {
-                dir('ProductService') {
-                    sh 'mvn package -DskipTests'
-                }
-            }
-        } 
-    }
-    
     post {
         success {
             echo '✅ Pipeline completed successfully!'
@@ -76,5 +58,6 @@ pipeline {
         failure {
             echo '❌ Pipeline failed!'
         }
+    }
     }
 }

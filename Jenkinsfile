@@ -20,32 +20,26 @@ pipeline {
             }
         }
 
-        stage('Maven dependencies') { // mvnw install dependencies
-            steps {
-                echo 'Running a clean install' 
-                sh 'cd ./backend && chmod +x ./mvnw && ./mvnw clean compile'
-                sh 'cd ./backend/auth-service && chmod +x ./mvnw && ./mvnw clean compile'
-                sh 'cd ./backend/calculator-service && chmod +x ./mvnw && ./mvnw clean compile'
-                sh 'cd ./Backend/product-service && chmod +x ./mvnw && ./mvnw clean compile'
-                sh 'cd ./Backend/SKUProfitability && chmod +x ./mvnw && ./mvnw clean compile'
-            }
-        }
-
         stage('Build and Package') { // build the jar
             steps {
                 dir('./backend') {
+                    sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
                 }
                 dir('./backend/auth-service') {
+                    sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
                 }
                 dir('./backend/calculator-service') {
+                    sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
                 }
                 dir('./backend/product-service') {
+                    sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
                 }
                 dir('./backend/SKUProfitability') {
+                    sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
                 }
             }

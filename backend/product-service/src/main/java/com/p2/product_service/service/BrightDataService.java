@@ -153,15 +153,24 @@ public class BrightDataService {
 
     private HttpResponse<String> callSnapshotApi(String snapshotId) {
         try{
+            // Create a new HTTP request using the Builder pattern
             HttpRequest request = HttpRequest.newBuilder()
+                    // Set the target URL by combining base URL and snapshot ID
                     .uri(URI.create(brightDataSnapshotUrl + snapshotId))
+                    // Set request timeout to 30 seconds
                     .timeout(Duration.ofSeconds(30))
+                    // Add Authorization header with Bearer token
                     .header("Authorization", "Bearer " + apiKey)
+                    // Specify this is a GET request
                     .GET()
+                    // Build the request
                     .build();
 
+            // Send the request using the httpClient and return the response
+            // The response body will be handled as a String
             return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         }
+        // Catch block for handling I/O related errors
         catch (IOException | InterruptedException e){
             log.error("Error calling snapshot api");
             return null;

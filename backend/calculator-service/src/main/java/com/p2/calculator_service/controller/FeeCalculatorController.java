@@ -123,7 +123,8 @@ public class FeeCalculatorController {
             BigDecimal profitMarginOctDec = CalculationUtil.calculateProfitMargin(netProfitOctDec, request.sellingPrice());
 
             Calculation calculation = new Calculation();
-            calculation.setUserId(currentUserId);tHeight(request.height());
+            calculation.setUserId(currentUserId);
+            calculation.setHeight(request.height());
             calculation.setWeight(request.weight());
             calculation.setSellingPrice(request.sellingPrice());
             calculation.setCategory(request.category());

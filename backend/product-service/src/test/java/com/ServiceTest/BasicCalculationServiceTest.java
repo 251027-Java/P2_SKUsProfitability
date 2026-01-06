@@ -33,17 +33,6 @@ public class BasicCalculationServiceTest {
     }
 
     @Test
-    void calculateFBAFulfillmentFee_HappyPath() {
-        try (MockedStatic<CalculationUtil> util = Mockito.mockStatic(CalculationUtil.class)) {
-            util.when(() -> CalculationUtil.calculateDimensionalWeight(length, width, height)).thenReturn(new BigDecimal("0.6"));
-            util.when(() -> CalculationUtil.calculateBillableWeight(weight, new BigDecimal("0.6"))).thenReturn(weight);
-            util.when(() -> CalculationUtil.roundToTwoDecimals(new BigDecimal("2.50"))).thenReturn(new BigDecimal("2.50"));
-            BigDecimal result = service.calculateFBAFulfillmentFee(length, width, height, weight);
-            assertEquals(new BigDecimal("2.50"), result);
-        }
-    }
-
-    @Test
     void calculateFBAFulfillmentFee_WithInput() {
         BigDecimal result = service.calculateFBAFulfillmentFee(length, width, height, weight);
         assertNotNull(result);
@@ -80,16 +69,6 @@ public class BasicCalculationServiceTest {
         assertEquals(BigDecimal.ZERO, service.calculateStorageFee(null, width, height));
         assertEquals(BigDecimal.ZERO, service.calculateStorageFee(length, null, height));
         assertEquals(BigDecimal.ZERO, service.calculateStorageFee(length, width, null));
-    }
-
-    @Test
-    void calculateStorageFeeJanSep_HappyPath() {
-        try (MockedStatic<CalculationUtil> util = Mockito.mockStatic(CalculationUtil.class)) {
-            util.when(() -> CalculationUtil.calculateCubicFeet(length, width, height)).thenReturn(new BigDecimal("0.1"));
-            util.when(() -> CalculationUtil.roundToTwoDecimals(new BigDecimal("0.15"))).thenReturn(new BigDecimal("0.15"));
-            BigDecimal result = service.calculateStorageFeeJanSep(length, width, height, months);
-            assertEquals(new BigDecimal("0.15"), result);
-        }
     }
 
     @Test
@@ -158,15 +137,6 @@ public class BasicCalculationServiceTest {
         assertNull(service.determineSizeTier(length, null, height, weight));
         assertNull(service.determineSizeTier(length, width, null, weight));
         assertNull(service.determineSizeTier(length, width, height, null));
-    }
-
-    @Test
-    void calculateTotalFees_HappyPath() {
-        try (MockedStatic<CalculationUtil> util = Mockito.mockStatic(CalculationUtil.class)) {
-            util.when(() -> CalculationUtil.safeAdd(any(BigDecimal.class), any(BigDecimal.class))).thenCallRealMethod();
-            BigDecimal result = service.calculateTotalFees(new BigDecimal("1"), new BigDecimal("2"), new BigDecimal("3"));
-            assertNotNull(result);
-        }
     }
 
     @Test

@@ -22,19 +22,12 @@ pipeline {
 
         stage('Build and Package') { // build the jar
             steps {
-                dir('./backend') {
-                    sh 'chmod +x ./mvnw && ./mvnw clean compile'
-                    sh './mvnw package -DskipTests'
-                }
-                /*
-                dir('./backend/auth-service') {
-                    sh 'chmod +x ./mvnw && ./mvnw clean compile'
-                    sh './mvnw package -DskipTests'
-                }
+                
                 dir('./backend/calculator-service') {
                     sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'
                 }
+                /*
                 dir('./backend/product-service') {
                     sh 'chmod +x ./mvnw && ./mvnw clean compile'
                     sh './mvnw package -DskipTests'

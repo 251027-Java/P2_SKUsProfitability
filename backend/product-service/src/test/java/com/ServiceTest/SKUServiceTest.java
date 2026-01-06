@@ -43,9 +43,19 @@ public class SKUServiceTest {
     @BeforeEach
     void setUp() {
         validDto = new SKUCreateDTO("SKU123", "Product", "Desc", new BigDecimal("10"), new BigDecimal("5"), new BigDecimal("2"), new BigDecimal("0.5"), "Category", new BigDecimal("100"));
-//        savedSku = new SKU("SKU123", "Product", "Desc", new BigDecimal("10"), new BigDecimal("5"), new BigDecimal("2"), new BigDecimal("0.5"), "Category", new BigDecimal("100"));
+        // populate savedSku with fields that match com.p2.product_service.model.SKU
         savedSku = new SKU();
         savedSku.setSkuId(1L);
+        savedSku.setSku("SKU123");
+        savedSku.setProductName("Product");
+        savedSku.setDescription("Desc");
+        savedSku.setLength(new BigDecimal("10"));
+        savedSku.setWidth(new BigDecimal("5"));
+        savedSku.setHeight(new BigDecimal("2"));
+        savedSku.setWeight(new BigDecimal("0.5"));
+        savedSku.setCategory("Category");
+        // sellingPrice field on model
+        savedSku.setSellingPrice(new BigDecimal("100"));
     }
 
 //    @Test

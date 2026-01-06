@@ -31,13 +31,13 @@ public class SKUService {
 
            BrightDataCategoryResponse brightDataCategoryResponse = brightDataService.getBestSellersByCategory(request);
 
-            return brightDataCategoryResponse
+            List<SKU> skus = brightDataCategoryResponse
                                     .getSkuResponseList()
                                     .stream()
                                     .map(skuMapper::dataBrightSkuToProductServiceSku)
                                     .toList();
 
-//            skuRepository.saveAll(mappedSkus);
+            return skuRepository.saveAll(skus);
 
     }
 

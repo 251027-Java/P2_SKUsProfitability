@@ -23,8 +23,8 @@ pipeline {
         stage('Maven dependencies') { // mvnw install dependencies
             steps {
                 echo 'Running a clean install' 
-                sh 'cd ./backend && chmod +x ./mvnw && ./mvnw clean complie'
-                sh 'cd ./backend/auth-service && chmod +x ./mvnw && ./mvnw clean complie'
+                sh 'cd ./backend && chmod +x ./mvnw && ./mvnw clean compile'
+                sh 'cd ./backend/auth-service && chmod +x ./mvnw && ./mvnw clean compile'
                 sh 'cd ./backend/calculator-service && chmod +x ./mvnw && ./mvnw clean compile'
                 sh 'cd ./Backend/product-service && chmod +x ./mvnw && ./mvnw clean compile'
                 sh 'cd ./Backend/SKUProfitability && chmod +x ./mvnw && ./mvnw clean compile'

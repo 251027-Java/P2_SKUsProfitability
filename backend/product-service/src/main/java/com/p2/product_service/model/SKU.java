@@ -1,6 +1,7 @@
 package com.p2.product_service.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.p2.product_service.listener.SKUEntityListener;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "skus", schema = "public")
+@EntityListeners(SKUEntityListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

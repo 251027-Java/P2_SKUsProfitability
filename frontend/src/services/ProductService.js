@@ -276,8 +276,6 @@ export const createList = async (listData) => {
             if (response.status === 401) {
                 errorMessage = 'Unauthorized. Please log in again.';
                 localStorage.removeItem('token');
-            } else if (response.status === 400) {
-                errorMessage = 'Invalid list data. Please check your input.';
             } else if (response.status === 500) {
                 errorMessage = 'Server error. Please check if the backend is running.';
             } else if (responseData) {

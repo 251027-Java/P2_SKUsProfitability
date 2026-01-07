@@ -12,6 +12,7 @@ function Calculator() {
         weight: '',
         category: '',
         sellingPrice: '',
+        sizeClassification: '',
         timeInStorage: '1',
         freightCost: '',
         freightCostUnit: '1',
@@ -58,6 +59,7 @@ function Calculator() {
                     weight: foundSKU.weight || '',
                     category: foundSKU.category || '',
                     sellingPrice: foundSKU.sellingPrice || '',
+                    sizeClassification: foundSKU.sizeClassification || '',
                 }));
                 setSearchTerm('');
                 setSearchError('');
@@ -85,13 +87,37 @@ function Calculator() {
         setLoading(true);
 
         try {
+            if (!formData.length || !formData.width || !formData.height || !formData.weight || !formData.sellingPrice) {
+                setError('Please fill in all required fields: length, width, height, weight, and selling price.');
+                setLoading(false);
+                return;
+            }
+
+            const length = parseFloat(formData.length);
+            const width = parseFloat(formData.width);
+            const height = parseFloat(formData.height);
+            const weight = parseFloat(formData.weight);
+            const sellingPrice = parseFloat(formData.sellingPrice);
+
+            if (isNaN(length) || isNaN(width) || isNaN(height) || isNaN(weight) || isNaN(sellingPrice)) {
+                setError('Please enter valid numbers for all dimensions, weight, and price.');
+                setLoading(false);
+                return;
+            }
+
+            if (length <= 0 || width <= 0 || height <= 0 || weight <= 0 || sellingPrice <= 0) {
+                setError('All dimensions, weight, and price must be greater than zero.');
+                setLoading(false);
+                return;
+            }
+
             const requestBody = {
-                length: parseFloat(formData.length),
-                width: parseFloat(formData.width),
-                height: parseFloat(formData.height),
-                weight: parseFloat(formData.weight),
+                length: length,
+                width: width,
+                height: height,
+                weight: weight,
                 category: formData.category || null,
-                sellingPrice: parseFloat(formData.sellingPrice),
+                sellingPrice: sellingPrice,
                 timeInStorage: formData.timeInStorage ? parseFloat(formData.timeInStorage) : 1,
                 freightCost: formData.freightCost ? parseFloat(formData.freightCost) : null,
                 freightCostUnit: formData.freightCostUnit ? parseFloat(formData.freightCostUnit) : 1,
@@ -196,9 +222,9 @@ function Calculator() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <label className="text-sm text-gray-700 dark:text-gray-300">Size Tier:</label>
+                        <label className="text-sm text-gray-700 dark:text-gray-300">Size Classification:</label>
                         <div className="text-sm font-medium text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
-                            {results?.sizeTier || '-'}
+                            {results?.sizeClassification || formData.sizeClassification || '-'}
                         </div>
                     </div>
 
@@ -337,7 +363,7 @@ function Calculator() {
                             </svg>
                         </div>
                         <p className={`text-sm font-medium ${results ? (parseFloat(results.profitMarginJanSep || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400') : 'text-gray-500 dark:text-gray-400'}`}>
-                            {results ? `${parseFloat(results.profitMarginJanSep || 0).toFixed(2)}/${parseFloat(results.profitMarginOctDec || 0).toFixed(2)} %` : '0.00/0.00 %'}
+                            {results ? `${(results.profitMarginJanSep || 0).toFixed(2)}/${(results.profitMarginOctDec || 0).toFixed(2)} %` : '0.00/0.00 %'}
                         </p>
                     </div>
 
@@ -349,9 +375,7 @@ function Calculator() {
                             </svg>
                         </div>
                         <p className={`text-sm font-medium ${results ? (parseFloat(results.roiJanSep || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400') : 'text-gray-500 dark:text-gray-400'}`}>
-                            {results && results.otherCosts > 0 
-                                ? `${parseFloat(results.roiJanSep || 0).toFixed(1)}/${parseFloat(results.roiOctDec || 0).toFixed(1)} %` 
-                                : '-'}
+                            {results ? `${(results.roiJanSep || 0).toFixed(1)}/${(results.roiOctDec || 0).toFixed(1)} %` : '-'}
                         </p>
                     </div>
                 </div>

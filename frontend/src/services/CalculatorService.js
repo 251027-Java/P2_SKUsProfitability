@@ -22,6 +22,14 @@ export const calculateFees = async (calculationData) => {
             if (response.status === 401) {
                 errorMessage = 'Unauthorized. Please log in again.';
                 localStorage.removeItem('token');
+            } else if (response.status === 400) {
+                if (!errorMessage || errorMessage === 'Calculation failed') {
+                    errorMessage = 'Invalid input. Please check all required fields are filled correctly.';
+                }
+            } else if (response.status === 404) {
+                errorMessage = 'Calculator service not found. Please ensure the calculator service is running on port 8083 and registered with Eureka.';
+            } else if (response.status === 503) {
+                errorMessage = 'Calculator service is unavailable. The service may be starting up or experiencing issues. Please wait a moment and try again.';
             } else if (response.status === 500) {
                 errorMessage = 'Server error. Please check if the backend is running.';
             }
@@ -38,6 +46,18 @@ export const calculateFees = async (calculationData) => {
             throw new Error('Cannot connect to server. Please ensure the backend is running on port 8080.');
         }
         throw new Error('Network error. Please try again.');
+    }
+};
+
+export const checkCalculatorHealth = async () => {
+    try {
+        const response = await fetch('/calculator/api/calculator/health', {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+        return response.ok;
+    } catch (error) {
+        return false;
     }
 };
 

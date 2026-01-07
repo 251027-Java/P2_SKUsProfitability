@@ -7,30 +7,9 @@ spring:
 
   cloud:
     gateway:
-      server:
-        webflux:
-          routes:
-            # Route: /clienta/** -> eureka-clienta service
-            - id: authservice-route
-              uri: lb://AUTH-SERVICE
-              predicates:
-                - Path=/auth/**          # Match all paths starting with /myclient/
-              filters:
-                - StripPrefix=1            # Remove /myclient prefix before forwarding
-
-            - id: productservice-route
-              uri: lb://PRODUCT-SERVICE
-              predicates:
-                - Path=/product/**          # Match all paths starting with /myclient/
-              filters:
-                - StripPrefix=1
-
-            - id: calculatorservice-route
-              uri: lb://CALCULATOR-SERVICE
-              predicates:
-                - Path=/calculator/**          # Match all paths starting with /myclient/
-              filters:
-                - StripPrefix=1
+      discovery:
+        locator:
+          enabled: false
 
 # Eureka Client Configuration
 eureka:
@@ -44,4 +23,5 @@ eureka:
 
 logging:
   level:
-    org.spring: DEBUG
+    org.springframework.cloud.gateway: INFO
+    com.netflix.discovery: INFO

@@ -23,7 +23,9 @@ public class WebConfig implements WebMvcConfigurer {
                         "/hello/**",
                         "/api/product/health",
                         "/api/skus/health",
-                        "/actuator/**"
+                        "/actuator/**",
+                        "/api/skus/add-category",
+                        "/api/skus/get-all"
                 );
     }
 

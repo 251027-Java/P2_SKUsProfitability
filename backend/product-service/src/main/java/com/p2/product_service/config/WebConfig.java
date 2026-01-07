@@ -18,14 +18,15 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/api/**")
+                .addPathPatterns("/api/lists/**")
                 .excludePathPatterns(
                         "/hello",
                         "/hello/**",
                         "/api/product/health",
                         "/api/skus/health",
-                        "/actuator/**",
-                        "/api/skus/add-category",
-                        "/api/skus/get-all"
+                        "/actuator/**"
+//                        "/api/skus/add-category",
+//                        "/api/skus/get-all"
                 );
     }
 

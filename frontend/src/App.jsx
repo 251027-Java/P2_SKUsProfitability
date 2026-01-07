@@ -19,7 +19,6 @@ function ProtectedRoute({ children }) {
         return <div className="text-white text-center mt-20">Loading...</div>;
     }
 
-    // Redirect to the UI path "/login", NOT the API path
     return authenticated ? children : <Navigate to="/login" replace />;
 }
 
@@ -28,10 +27,7 @@ function App() {
         <Router>
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 transition-colors duration-200">
                 <Routes>
-                    {/* UI ROUTES (Clean URLs for the user) */}
                     <Route path="/login" element={<LoginPage />} />
-                    
-                    {/* Redirect root to login */}
                     <Route path="/" element={<Navigate to="/login" replace />} />
 
                     <Route 
@@ -53,8 +49,6 @@ function App() {
                             </ProtectedRoute>
                         } 
                     />
-
-                    {/* Catch-all: Redirect unknown routes to login */}
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </div>

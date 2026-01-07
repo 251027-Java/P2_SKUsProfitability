@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllSKUs, createSKU, deleteSKU, importSKUsFromCSV, getAllLists, addSKUToList } from '../services/ProductService';
-import SKUForm from '../components/SKUForm';
+import { getAllSKUs, deleteSKU, getAllLists, addSKUToList } from '../services/ProductService';
 import Calculator from '../components/Calculator';
 import Sidebar from '../components/Sidebar';
 import ListsPage from './ListsPage';
@@ -10,7 +9,6 @@ function HomePage() {
     const navigate = useNavigate();
     const [skus, setSkus] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showForm, setShowForm] = useState(false);
     const [activeSection, setActiveSection] = useState('dashboard');
 
 
@@ -91,19 +89,6 @@ function HomePage() {
         }
     };
 
-    const handleCreateSKU = async (skuData) => {
-        try {
-            setError('');
-            setSuccess('');
-            await createSKU(skuData);
-            setSuccess('SKU created successfully!');
-            setShowForm(false);
-            await loadSKUs();
-        } catch (err) {
-            setError(err.message || 'Failed to create SKU');
-        }
-    };
-
     const handleDeleteSKU = async (skuId) => {
         if (!window.confirm('Are you sure you want to delete this SKU?')) {
             return;
@@ -118,54 +103,6 @@ function HomePage() {
         }
     };
 
-    const handleCSVImport = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        try {
-            setError('');
-            setSuccess('');
-            const result = await importSKUsFromCSV(file);
-            setSuccess(`Successfully imported ${result.count} SKU(s)!`);
-            await loadSKUs();
-        } catch (err) {
-            setError(err.message || 'Failed to import SKUs');
-        } finally {
-            e.target.value = '';
-        }
-    };
-
-    const dashboardSKUs = skus;
-    const totalSKUs = dashboardSKUs.length;
-    
-    const skusWithPrice = dashboardSKUs.filter(sku => sku.sellingPrice && parseFloat(sku.sellingPrice) > 0);
-    const avgAmazonPrice = skusWithPrice.length > 0
-        ? skusWithPrice.reduce((sum, sku) => sum + parseFloat(sku.sellingPrice), 0) / skusWithPrice.length
-        : 0;
-    
-    const skusWithFees = dashboardSKUs.filter(sku => sku.totalFees != null);
-    const avgTotalFees = skusWithFees.length > 0
-        ? skusWithFees.reduce((sum, sku) => sum + parseFloat(sku.totalFees || 0), 0) / skusWithFees.length
-        : 0;
-    
-    const uniqueCategories = [...new Set(dashboardSKUs.map(sku => sku.category).filter(cat => cat))].length;
-    
-    const negativeProfitCount = dashboardSKUs.filter(sku => {
-        const profit = parseFloat(sku.netProfit || 0);
-        return profit < 0;
-    }).length;
-    
-    const categoryDistribution = dashboardSKUs.reduce((acc, sku) => {
-        const category = sku.category || 'Uncategorized';
-        acc[category] = (acc[category] || 0) + 1;
-        return acc;
-    }, {});
-    
-    const sizeDistribution = dashboardSKUs.reduce((acc, sku) => {
-        const sizeTier = sku.sizeClassification || 'Unknown';
-        acc[sizeTier] = (acc[sizeTier] || 0) + 1;
-        return acc;
-    }, {});
 
     const renderContent = () => {
         switch (activeSection) {
@@ -186,40 +123,7 @@ function HomePage() {
                                     <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">My SKUs</h1>
                                     <p className="text-gray-600 dark:text-gray-300 text-lg">Manage your product inventory</p>
                                 </div>
-                                <div className="flex gap-3">
-                                    <label className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                        </svg>
-                                        <input
-                                            type="file"
-                                            accept=".csv"
-                                            onChange={handleCSVImport}
-                                            className="hidden"
-                                        />
-                                        Import CSV
-                                    </label>
-                                    <button
-                                        onClick={() => setShowForm(!showForm)}
-                                        className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:from-indigo-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        {showForm ? 'Cancel' : 'Add SKU'}
-                                    </button>
-                                </div>
                             </div>
-
-                            {showForm && (
-                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8 transition-colors duration-200">
-                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add New SKU</h2>
-                                    <SKUForm
-                                        onSave={handleCreateSKU}
-                                        onCancel={() => setShowForm(false)}
-                                    />
-                                </div>
-                            )}
                         </div>
 
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors duration-200">
@@ -240,16 +144,7 @@ function HomePage() {
                                         </svg>
                                     </div>
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No SKUs yet</h3>
-                                    <p className="text-gray-600 dark:text-gray-300 mb-6">Get started by adding your first product</p>
-                                    <button
-                                        onClick={() => setShowForm(true)}
-                                        className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:from-indigo-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        Add Your First SKU
-                                    </button>
+                                    <p className="text-gray-600 dark:text-gray-300">SKUs will appear here once data is synced from Bright Data API</p>
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
@@ -359,47 +254,6 @@ function HomePage() {
                 );
             case 'dashboard':
             default:
-                // const skuIdsInLists = new Set();
-                // lists.forEach(list => {
-                //     if (list.items) {
-                //         list.items.forEach(item => skuIdsInLists.add(item.skuId));
-                //     }
-                // });
-                
-                const skuIdsInLists = new Set();
-
-                // This line prevents the crash:
-                if (Array.isArray(lists)) {
-                    lists.forEach(list => {
-                        if (list && list.items && Array.isArray(list.items)) {
-                            list.items.forEach(item => skuIdsInLists.add(item.skuId));
-                        }
-                    });
-                }
-                const unlistedSKUs = skus.filter(sku => !skuIdsInLists.has(sku.skuId));
-                
-                const productsNeedingAttention = skus.filter(sku => {
-                    const profit = parseFloat(sku.netProfit || 0);
-                    return profit < 0;
-                });
-                
-                // const listsWithMetrics = lists.map(list => {
-                //     const listSKUs = list.items || [];
-                //     const listSKUsWithPrice = listSKUs.filter(sku => sku.sellingPrice && parseFloat(sku.sellingPrice) > 0);
-                //     const avgPrice = listSKUsWithPrice.length > 0
-                //         ? listSKUsWithPrice.reduce((sum, sku) => sum + parseFloat(sku.sellingPrice), 0) / listSKUsWithPrice.length
-                //         : 0;
-                //     const negativeCount = listSKUs.filter(sku => parseFloat(sku.netProfit || 0) < 0).length;
-                    
-                //     return {
-                //         ...list,
-                //         avgPrice,
-                //         negativeCount,
-                //         itemCount: list.itemCount || listSKUs.length
-                //     };
-                // });
-                
-                // Add "Array.isArray(lists) ?" at the start
                 const listsWithMetrics = Array.isArray(lists) 
                     ? lists.map(list => {
                         const listSKUs = list.items || [];
@@ -416,7 +270,7 @@ function HomePage() {
                             itemCount: list.itemCount || listSKUs.length
                         };
                     }) 
-                : []; // If lists is not an array, this returns an empty list so the UI doesn't crash
+                : [];
                 return (
                     <>
                         <div className="mb-10">
@@ -428,61 +282,6 @@ function HomePage() {
                                     <p className="text-gray-600 dark:text-gray-300 text-lg">
                                         Overview of your product portfolio and lists
                                     </p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-indigo-100 rounded-lg">
-                                            <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Total Products</p>
-                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{skus.length}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Imported SKUs</p>
-                                </div>
-                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                            <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Active Lists</p>
-                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{lists.length}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Organized lists</p>
-                                </div>
-                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className={`p-3 rounded-lg ${productsNeedingAttention.length > 0 ? 'bg-red-100' : 'bg-green-100'}`}>
-                                            <svg className={`w-6 h-6 ${productsNeedingAttention.length > 0 ? 'text-red-600' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Need Attention</p>
-                                    <p className={`text-3xl font-bold ${productsNeedingAttention.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                        {productsNeedingAttention.length}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Negative profit potential</p>
-                                </div>
-                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className={`p-3 rounded-lg ${unlistedSKUs.length > 0 ? 'bg-amber-100' : 'bg-gray-100'}`}>
-                                            <svg className={`w-6 h-6 ${unlistedSKUs.length > 0 ? 'text-amber-600' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Unlisted Products</p>
-                                    <p className={`text-3xl font-bold ${unlistedSKUs.length > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-400'}`}>
-                                        {unlistedSKUs.length}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Not in any list</p>
                                 </div>
                             </div>
 
@@ -543,150 +342,72 @@ function HomePage() {
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-200">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Unlisted Products</h2>
-                                        <button
-                                            onClick={() => setActiveSection('skus')}
-                                            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
-                                        >
-                                            View All →
-                                        </button>
-                                    </div>
-                                    {unlistedSKUs.length === 0 ? (
-                                        <div className="text-center py-8">
-                                            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mb-4">
-                                                <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </div>
-                                            <p className="text-gray-600 dark:text-gray-300 font-medium">All products are organized!</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Every product is in at least one list</p>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {unlistedSKUs.slice(0, 5).map((sku) => (
-                                                <div key={sku.skuId} className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                                                    <div className="flex-1">
-                                                        <p className="font-semibold text-gray-900 dark:text-white">{sku.sku}</p>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-300">{sku.productName || 'No name'}</p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => setActiveSection('skus')}
-                                                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
-                                                    >
-                                                        Add to List →
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            {unlistedSKUs.length > 5 && (
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 text-center pt-2">
-                                                    +{unlistedSKUs.length - 5} more unlisted products
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-200">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Products Needing Attention</h2>
-                                        <button
-                                            onClick={() => setActiveSection('skus')}
-                                            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
-                                        >
-                                            View All →
-                                        </button>
-                                    </div>
-                                    {productsNeedingAttention.length === 0 ? (
-                                        <div className="text-center py-8">
-                                            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mb-4">
-                                                <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </div>
-                                            <p className="text-gray-600 dark:text-gray-300 font-medium">All products look good!</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No products with negative profit potential</p>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {productsNeedingAttention.slice(0, 5).map((sku) => (
-                                                <div key={sku.skuId} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                                                    <div className="flex-1">
-                                                        <p className="font-semibold text-gray-900 dark:text-white">{sku.sku}</p>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-300">{sku.productName || 'No name'}</p>
-                                                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                                                            Loss: ${Math.abs(parseFloat(sku.netProfit || 0)).toFixed(2)}
-                                                        </p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => setActiveSection('skus')}
-                                                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
-                                                    >
-                                                        Review →
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            {productsNeedingAttention.length > 5 && (
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 text-center pt-2">
-                                                    +{productsNeedingAttention.length - 5} more products need attention
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-200">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Quick Actions</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <button
-                                        onClick={() => setActiveSection('calculator')}
-                                        className="flex items-center gap-4 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:from-indigo-100 hover:to-blue-100 dark:hover:from-indigo-900/30 dark:hover:to-blue-900/30 transition-all duration-200 text-left"
-                                    >
-                                        <div className="p-3 bg-indigo-600 dark:bg-indigo-500 rounded-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-gray-900 dark:text-white">Calculator</p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">Calculate fees & ROI</p>
-                                        </div>
-                                    </button>
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8 transition-colors duration-200">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">My SKUs</h2>
                                     <button
                                         onClick={() => setActiveSection('skus')}
-                                        className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-all duration-200 text-left"
+                                        className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
                                     >
-                                        <div className="p-3 bg-green-600 dark:bg-green-500 rounded-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-gray-900 dark:text-white">Add SKU</p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">Add new product</p>
-                                        </div>
+                                        Show More →
                                     </button>
-                                    <label className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-all duration-200 text-left cursor-pointer">
-                                        <div className="p-3 bg-purple-600 dark:bg-purple-500 rounded-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-gray-900 dark:text-white">Import CSV</p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">Bulk import products</p>
-                                        </div>
-                                        <input
-                                            type="file"
-                                            accept=".csv"
-                                            onChange={handleCSVImport}
-                                            className="hidden"
-                                        />
-                                    </label>
                                 </div>
+                                {loading ? (
+                                    <div className="text-center py-8">
+                                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 dark:border-indigo-400 border-t-transparent"></div>
+                                        <p className="mt-4 text-gray-600 dark:text-gray-300 text-sm">Loading SKUs...</p>
+                                    </div>
+                                ) : skus.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500 dark:text-gray-400">No SKUs in database yet</p>
+                                        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">SKUs will appear here once data is synced from Bright Data API</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                                        {skus.slice(0, 10).map((sku) => (
+                                            <div key={sku.skuId} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-semibold text-gray-900 dark:text-white truncate">{sku.sku}</p>
+                                                            <p className="text-sm text-gray-600 dark:text-gray-300 truncate">{sku.productName || 'No name'}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-4 text-sm">
+                                                            <div>
+                                                                <span className="text-gray-500 dark:text-gray-400">Price: </span>
+                                                                <span className="font-medium text-gray-900 dark:text-white">${parseFloat(sku.sellingPrice || 0).toFixed(2)}</span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-gray-500 dark:text-gray-400">Profit: </span>
+                                                                <span className={`font-semibold ${
+                                                                    parseFloat(sku.netProfit || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                                                                }`}>
+                                                                    ${parseFloat(sku.netProfit || 0).toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => navigate(`/sku/${sku.skuId}`)}
+                                                    className="ml-4 px-3 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors duration-150 whitespace-nowrap"
+                                                >
+                                                    View
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {skus.length > 10 && (
+                                            <div className="pt-2 text-center">
+                                                <button
+                                                    onClick={() => setActiveSection('skus')}
+                                                    className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
+                                                >
+                                                    View all {skus.length} SKUs →
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </>

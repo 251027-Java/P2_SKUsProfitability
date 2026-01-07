@@ -41,7 +41,6 @@ This application helps Amazon sellers make informed decisions about which produc
 - **Lists Overview**: Summary of all lists with item counts and metrics
 
 ## Product Size Classifications
-
 Products are automatically classified into size tiers based on dimensions and weight:
 
 - **Small Standard**: ≤15" x 12" x 0.75", ≤0.75 lbs

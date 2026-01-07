@@ -60,6 +60,29 @@ services:
     networks:
       - sku-network
 
+
+  product-db:
+    image: postgres:16-alpine
+    container_name: product-db
+    environment:
+      POSTGRES_DB: product_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5433:5432"
+    volumes:
+      - product_data:/var/lib/postgresql/data  # Changed volume name to product_data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d sku_profitability_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - sku-network
+
   eureka-server:
     build:
       context: ./backend/eureka-server
@@ -201,6 +224,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  product_data:
     driver: local
 
 networks:

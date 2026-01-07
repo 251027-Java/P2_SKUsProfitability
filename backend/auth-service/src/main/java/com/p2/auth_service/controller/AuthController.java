@@ -77,6 +77,16 @@ public class AuthController {
 
     @GetMapping("/health")
     public Map<String, String> health() {
-        return Map.of("status", "UP", "service", "AuthService");
+        long userCount = appUserRepository.count();
+        return Map.of(
+            "status", "UP", 
+            "service", "AuthService",
+            "userCount", String.valueOf(userCount)
+        );
+    }
+    
+    @GetMapping("/test")
+    public Map<String, String> test() {
+        return Map.of("message", "Auth service is reachable", "status", "OK");
     }
 }

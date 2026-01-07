@@ -17,12 +17,10 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestUri = request.getRequestURI();
 
-        // Allow OPTIONS requests for CORS preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        // Exclude health check endpoints
         if (requestUri.contains("/health") || requestUri.contains("/actuator")) {
             return true;
         }

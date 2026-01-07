@@ -45,36 +45,27 @@ public class BrightDataService {
     public BrightDataCategoryResponse getBestSellersByCategory(BrightDataDiscoverByBestSellerRequest request) throws RuntimeException {
 
         try {
-            //converting request object to json string
             String requestBody = mapper.writeValueAsString(request);
 
-            //sending request to bright data
             HttpRequest brightDataRequest = HttpRequest.newBuilder()
                     .uri(new URI(brightDataCategoryUrl))
                     .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
-            //sending request to bright data
             HttpResponse<String> response = httpClient.send(brightDataRequest, HttpResponse.BodyHandlers.ofString());
 
-            //converting response to json
             JsonNode root = mapper.readTree(response.body());
 
-            // check if response contain data directly (not snapshot)
             if(!root.has("snapshot_id")){
-                // If no snapshot_id, parse and return the response data directly
                 return mapper.readValue(response.body(), BrightDataCategoryResponse.class);
             }
 
-            //If we get here, the data isn't ready yet (snapshot is being prepared)
             log.info("DataBright Response not ready yet. Calling Snapshot API.");
 
-            // Parse the snapshot ID from the response
             SnapshotResponse snapshotResponse = mapper.readValue(response.body(), SnapshotResponse.class);
             log.info("Snapshot response is: " +  snapshotResponse.toString());
 
-            //Start polling the snapshot until data is ready
             return pollSnapshotUntilComplete(snapshotResponse.getSnapshotId());
         } catch (InterruptedException e) {
             log.error("Error sending request to bright data: " + e);
@@ -90,28 +81,20 @@ public class BrightDataService {
 
     private BrightDataCategoryResponse pollSnapshotUntilComplete(String snapshotId) throws RuntimeException {
 
-        //Configure polling behavior
-        int maxAttempts = 24;          // 24 * 10s = 240 seconds
-        int pollIntervalMs = 10_000;   // 10 seconds
+        int maxAttempts = 24;
+        int pollIntervalMs = 10_000;
 
         try{
-            //Start polling loop
             for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-                //Log current polling attempt
                 log.info("Polling Snapshot API " +  attempt + "/" + maxAttempts);
 
-                //Make API call to check snapshot status
                 HttpResponse<String> snapshotResponse = callSnapshotApi(snapshotId);
 
-                //Parse response as JSON
                 JsonNode root = mapper.readTree(snapshotResponse.body());
 
-                //Check if data is still being prepared
                 if (root.has("status")) {
-
-                    //Not ready yet → wait before next poll
                     Thread.sleep(pollIntervalMs);
-                    continue; // Skip to next iteration
+                    continue;
                 }
 
                 BrightDataCategoryResponse brightDataCategoryResponse = new BrightDataCategoryResponse();
@@ -125,12 +108,10 @@ public class BrightDataService {
 
                         JsonNode node = mapper.readTree(line);
 
-                        //Filter out the error objects
                         if (!node.has("root_bs_category")) {
-                            continue; // skip
+                            continue;
                         }
 
-                        // Map valid object
                         brightDataSkuResponseList.add(mapper.treeToValue(node, BrightDataSkuResponse.class));
                     }
                 } catch (IOException e) {
@@ -138,39 +119,27 @@ public class BrightDataService {
                 }
                 brightDataCategoryResponse.setSkuResponseList(brightDataSkuResponseList);
 
-                //Data is ready → return response
                 return brightDataCategoryResponse;
             }
 
-            //Data never became ready → throw exception
             throw new BrightDataException("Snapshot wasn't ready after " + maxAttempts + " attempts.");
         }
         catch (JsonProcessingException | InterruptedException e) {
-            //Handle any errors during polling
             throw new BrightDataException(e.getMessage());
         }
     }
 
     private HttpResponse<String> callSnapshotApi(String snapshotId) {
         try{
-            // Create a new HTTP request using the Builder pattern
             HttpRequest request = HttpRequest.newBuilder()
-                    // Set the target URL by combining base URL and snapshot ID
                     .uri(URI.create(brightDataSnapshotUrl + snapshotId))
-                    // Set request timeout to 30 seconds
                     .timeout(Duration.ofSeconds(30))
-                    // Add Authorization header with Bearer token
                     .header("Authorization", "Bearer " + apiKey)
-                    // Specify this is a GET request
                     .GET()
-                    // Build the request
                     .build();
 
-            // Send the request using the httpClient and return the response
-            // The response body will be handled as a String
             return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         }
-        // Catch block for handling I/O related errors
         catch (IOException | InterruptedException e){
             log.error("Error calling snapshot api");
             return null;

@@ -28,6 +28,7 @@ function App() {
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 transition-colors duration-200">
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<LoginPage />} />
                     <Route path="/" element={<Navigate to="/login" replace />} />
 
                     <Route 

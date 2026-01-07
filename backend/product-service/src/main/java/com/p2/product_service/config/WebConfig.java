@@ -1,10 +1,10 @@
 package com.p2.product_service.config;
-
-import com.p2.product_service.JwtInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.p2.product_service.JwtInterceptor;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -23,7 +23,9 @@ public class WebConfig implements WebMvcConfigurer {
                         "/hello/**",
                         "/api/product/health",
                         "/api/skus/health",
-                        "/actuator/**"
+                        "/actuator/**",
+                        "/api/skus/add-category",
+                        "/api/skus/get-all"
                 );
     }
 

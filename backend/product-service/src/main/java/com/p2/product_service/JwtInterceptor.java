@@ -17,17 +17,29 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestUri = request.getRequestURI();
 
+        // Allow OPTIONS requests for CORS preflight
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
+        // Exclude health check endpoints
+        if (requestUri.contains("/health") || requestUri.contains("/actuator")) {
+            return true;
+        }
+
         String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Unauthorized: Missing or invalid token format.");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Unauthorized: Missing or invalid token format.\"}");
             return false;
         }
 
         String token = authHeader.substring(7);
         if (!jwtUtil.validateToken(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Unauthorized: invalid token.");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Unauthorized: invalid token.\"}");
             return false;
         }
 

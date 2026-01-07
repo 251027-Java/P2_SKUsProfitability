@@ -14,32 +14,27 @@ Microservices covered in this document
 Base path: `/api/auth` (AuthController)
 Additional public endpoint: `/hello` (MyController)
 
-### POST /api/auth/login
-Authenticate a user and return a JWT token.
-
+1) POST /api/auth/login
+- Authenticate a user and return a JWT token.
 - Method: POST
 - Path: /api/auth/login
 - Request headers: Content-Type: application/json
 - Request body (JSON):
   - email (string) — user's email
   - password (string) — plain-text password to check against stored (bcrypt) hash
-
 - Success response:
   - HTTP 200 OK
   - The token is created by `JwtUtil.generateToken(userId, email, userRole)`.
-
 - Common error responses:
   - HTTP 404 Not Found — when user with given email is not found.
   - HTTP 401 Unauthorized — when password check fails.
   - HTTP 500 Internal Server Error — unexpected errors.
+- Notes:
+    - Passwords are verified with the injected `PasswordEncoder` (BCrypt).
+    - The controller looks up user by email using `AppUserRepository.findByEmail`.
 
-Notes:
-- Passwords are verified with the injected `PasswordEncoder` (BCrypt).
-- The controller looks up user by email using `AppUserRepository.findByEmail`.
-
-### POST /api/auth/register
-Register a new customer / seller, create an AppUser and return a JWT token.
-
+2) POST /api/auth/register
+- Register a new customer / seller, create an AppUser and return a JWT token.
 - Method: POST
 - Path: /api/auth/register
 - Request headers: Content-Type: application/json
@@ -48,30 +43,25 @@ Register a new customer / seller, create an AppUser and return a JWT token.
   - password (string) — required, validated (length >= 6 and <= 100)
   - firstName (string) — required
   - lastName (string) — required
-
 - Success response:
   - HTTP 200 OK
   - The controller sets the newly created user's role to `"SELLER"` when generating the token.
-
 - Error responses:
   - HTTP 400 Bad Request — validation failure (ValidationUtil throws IllegalArgumentException)
   - HTTP 500 Internal Server Error — unexpected errors during registration or database save.
+- Notes:
+    - Validation performed via `ValidationUtil` (validateEmail, validatePassword, validateName).
+    - The service checks if an email already exists and throws `IllegalArgumentException("Email already in use.")`.
 
-Notes:
-- Validation performed via `ValidationUtil` (validateEmail, validatePassword, validateName).
-- The service checks if an email already exists and throws `IllegalArgumentException("Email already in use.")`.
-
-### GET /api/auth/health
-Health check for the Auth service.
-
+3) GET /api/auth/health
+- Health check for the Auth service.
 - Method: GET
 - Path: /api/auth/health
 - Response:
   - HTTP 200 OK
 
-### GET /hello
-Simple greeting endpoint for the Auth service (MyController).
-
+4) GET /hello
+- Simple greeting endpoint for the Auth service (MyController).
 - Method: GET
 - Path: /hello
 - Response:
@@ -139,61 +129,49 @@ Base paths:
   - Returns list of SKUs (mapped to `SKUDTO`)
   - Requires `userId` attribute (401 if missing)
   - Response: 200 list of SKUDTO
-
 - GET /api/skus/{skuId}
   - Returns single SKU by id (SKUDTO) or 404
   - Requires `userId`
-
 - GET /api/skus/search?q={query}
   - Search by SKU string
   - Requires `userId`
-
 - DELETE /api/skus/{skuId}
   - Delete SKU by id
   - Requires `userRole` to be ADMIN (403 otherwise)
   - Response: 204 No Content on success, 404 if not found
-
 - POST /api/skus/test-kafka?sku={sku}
   - Admin-only endpoint that triggers a Kafka producer to send a message to topic `sku-updates`
   - Response: 200 OK with confirmation string
-
-Notes:
-- SKU model fields: skuId, sku, productName, description, length, width, height, weight, category, sellingPrice, etc.
-- There are BrightData related DTO imports in controller (BrightDataCollectByUrlRequest, BrightDataDiscoverByBestSellerRequest).
+- Notes:
+    - SKU model fields: skuId, sku, productName, description, length, width, height, weight, category, sellingPrice, etc.
+    - There are BrightData related DTO imports in controller (BrightDataCollectByUrlRequest, BrightDataDiscoverByBestSellerRequest).
 
 2) ListController — /api/lists (Seller lists)
 - GET /api/lists
   - Returns all lists for authenticated user (userId required)
   - Response: 200 list of SellerListDTO
-
 - GET /api/lists/{listId}
   - Return list by id for the authenticated user (or 404)
-
 - POST /api/lists
   - Create a seller list from `SellerListCreateDTO`
   - Requires seller role (`userRole` SELLER or ADMIN)
   - Response: 201 Created with created SellerListDTO
-
 - PUT /api/lists/{listId}
   - Update list (seller role required)
   - Returns 200 updated DTO or 404
-
 - DELETE /api/lists/{listId}
   - Delete list (seller role required)
   - Returns 204 or 404
-
 - POST /api/lists/{listId}/skus/{skuId}
   - Add SKU to list (seller role required)
   - Returns updated SellerListDTO or error
-
-Notes:
-- The controller obtains the current userId and role from request attributes and enforces authorization locally.
-- Service layer: `SellerListService` handles the business logic.
+- Notes:
+    - The controller obtains the current userId and role from request attributes and enforces authorization locally.
+    - Service layer: `SellerListService` handles the business logic.
 
 3) Health endpoint
 - GET /api/product/health
   - Response: 200 `{ "status": "UP", "service": "ProductService" }`
-
 Error handling
 - `GlobalExceptionHandler` maps:
   - `BrightDataException` -> 500 with ErrorResponse

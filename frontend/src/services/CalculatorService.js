@@ -41,13 +41,8 @@ export const calculateFees = async (calculationData) => {
     }
 };
 
-/**
- * Calculates fees using a specific SKU. 
- * Defaults are pulled from the synced database, but can be overridden by requestData.
- */
 export const calculateBySku = async (sku, requestData) => {
     try {
-        // We append the sku as a query parameter: ?sku=YOUR_SKU
         const response = await fetch(`/calculator/api/calculator/calculate/sku?sku=${encodeURIComponent(sku)}`, {
             method: 'POST',
             headers: getAuthHeaders(),

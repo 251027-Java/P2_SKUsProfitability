@@ -18,9 +18,10 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/api/calculator/**")
                 .excludePathPatterns(
-
                         "/hello",
-                        "/hello/**"
+                        "/hello/**",
+                        "/api/calculator/health",
+                        "/actuator/**"
                 );
     }
 

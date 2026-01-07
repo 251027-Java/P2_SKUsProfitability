@@ -5,7 +5,7 @@ A web application for Amazon sellers to analyze product profitability by calcula
 ## Overview
 
 This application helps Amazon sellers make informed decisions about which products to sell by:
-- Importing product data via CSV files
+- Collecting data from BrightData API
 - Calculating Amazon FBA fees based on product dimensions and weight
 - Determining storage fees for different time periods
 - Analyzing profitability metrics (net profit, margin)
@@ -14,8 +14,7 @@ This application helps Amazon sellers make informed decisions about which produc
 ## Features
 
 ### Product Management
-- **CSV Import**: Bulk import products with dimensions, weight, pricing, and category data
-- **Manual Entry**: Create individual SKUs with all product details
+- **API SKU Management**: API gets SKUs for all products
 - **Search**: Find products quickly by SKU
 - **Lists**: Organize products into custom lists for portfolio management
 
@@ -40,44 +39,6 @@ This application helps Amazon sellers make informed decisions about which produc
   - Products not in any list
   - Products with negative profit potential
 - **Lists Overview**: Summary of all lists with item counts and metrics
-
-## CSV Import Format
-
-When importing products via CSV, include the following columns:
-
-**Required Fields (must have values):**
-- **SKU**: Product SKU identifier (must be unique, alphanumeric with underscores/hyphens, max 50 characters)
-- **Product Name**: Name of the product (max 200 characters)
-- **Description**: Product description (text field)
-- **Category**: Product category (affects referral fees, max 50 characters)
-
-**Optional Fields (can be empty):**
-- **Length**: Product length in inches (numeric)
-- **Width**: Product width in inches (numeric)
-- **Height**: Product height in inches (numeric)
-- **Weight**: Product weight in pounds (numeric)
-- **Selling Price**: Average Amazon price over 90 days (numeric, can include $ and commas)
-
-**Important Notes:**
-- **Header names are case-insensitive** (e.g., "SKU", "sku", "Sku" all work)
-- **Numeric fields** can include currency symbols ($) and commas, which are automatically removed during parsing
-- **Dimensions and weight** are optional but highly recommended for accurate fee calculations
-- Without dimensions and weight, the application cannot calculate:
-  - Size classification (Small Standard, Large Standard, Small Oversize, Large Oversize)
-  - FBA fulfillment fees
-  - Storage fees
-- Without selling price, the application cannot calculate:
-  - Referral fees
-  - Net profit
-  - Profit margin
-
-The application automatically:
-- Calculates size classification (Small Standard, Large Standard, Small Oversize, Large Oversize)
-- Determines FBA fulfillment fees
-- Calculates **Amazon's 15% referral fee** (default, minimum $0.30) based on category
-- Computes profitability metrics
-
-**Important**: The 15% Amazon referral fee is automatically included in all fee calculations. This represents Amazon's commission on every sale and is a standard fee across most product categories.
 
 ## Product Size Classifications
 
@@ -117,7 +78,8 @@ This 15% Amazon referral fee is automatically included in the total fees calcula
 
 ## How It Works
 
-1. **Import Products**: Upload a CSV file with product data or manually create SKUs
+1. **API Product Management**: API gets SKUs for all products and populates the SKU table and product-service 
+
 2. **Automatic Calculations**: The system automatically calculates:
    - Size classification based on dimensions
    - FBA fulfillment fees
